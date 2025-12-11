@@ -1,35 +1,32 @@
 #!/usr/bin/env nextflow
 
-params.rawDir = "/path/to/rawfiles"   // override via --rawDir
-params.batchSize = 5                   // number of raw files per process
-
-workDir = "/scratch/$USER/nextflow_work"
+params.rawDir = "$baseDir/raw"
+params.outDir = "results/mzML"
 
 Channel
     .fromPath("${params.rawDir}/*.raw")
-    .batch(params.batchSize)          // group raw files
-    .set { rawFileBatches }
+    .set { rawFiles }
 
-process convert_to_mzML_batch {
+process convert_to_mzML {
+    tag "$rawFile"
+    label 'med'
 
-    label 'large'
-    publishDir "results/output", mode: 'link'
+    publishDir params.outDir, mode: 'copy'
+
+    container "containers/TRFP.sif"
 
     input:
-    path batchFiles
+    path rawFile
 
     output:
-    path "*.mzML"    // all outputs from this batch
+    path "${rawFile.simpleName}.mzML"
 
     script:
     """
-    for rawFile in ${batchFiles} ; do
-        bash ${workflow.projectDir}/convert_to_mzML.sh -i \$rawFile
-    done
+    convert_to_mzML.sh ${rawFile}
     """
 }
 
-// Workflow
 workflow {
-    rawFileBatches | convert_to_mzML_batch
+    convert_to_mzML(rawFiles)
 }
