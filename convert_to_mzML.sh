@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-# Parse input arguments
+# ------------------------------
+# Minimal input parser
+# ------------------------------
 INPUT=""
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -17,17 +19,22 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "$INPUT" ]]; then
-    echo "Error: input file required"
+    echo "[ERROR] Input file required"
     exit 1
 fi
 
-# Auto-generate output file in the same folder
+# ------------------------------
+# Generate output filename
+# ------------------------------
 OUTPUT="${INPUT%.raw}.mzML"
-
 echo "[INFO] Converting $INPUT → $OUTPUT"
 
-# Path to Linux ThermoRawFileParser
-TRFP_DIR="$HOME/ThermoRawFileParser"
+# ------------------------------
+# Linux ThermoRawFileParser path inside container
+# ------------------------------
+TRFP_DIR="/opt/ThermoRawFileParser"  # adjust to container path
 
+# ------------------------------
 # Run conversion
+# ------------------------------
 "$TRFP_DIR/ThermoRawFileParser" -i "$INPUT" -b "$OUTPUT" -f 1

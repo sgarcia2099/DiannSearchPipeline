@@ -1,26 +1,35 @@
-// Nextflow script for converting multiple Thermo .raw files to mzML
-params.rawDir="path/to/rawfiles"
+#!/usr/bin/env nextflow
+
+params.rawDir = "/path/to/rawfiles"   // override via --rawDir
+params.batchSize = 5                   // number of raw files per process
+
+workDir = "/scratch/$USER/nextflow_work"
 
 Channel
     .fromPath("${params.rawDir}/*.raw")
-    .set { rawFiles }
+    .batch(params.batchSize)          // group raw files
+    .set { rawFileBatches }
 
-process convert_to_mzML {
+process convert_to_mzML_batch {
+
+    label 'large'
     publishDir "results/output", mode: 'link'
 
     input:
-    path rawFile
+    path batchFiles
 
     output:
-    path "${rawFile.simpleName}.mzML", emit: mzMLFile
+    path "*.mzML"    // all outputs from this batch
 
     script:
     """
-    bash ${workflow.projectDir}/convert_to_mzML.sh -i ${rawFile}
+    for rawFile in ${batchFiles} ; do
+        bash ${workflow.projectDir}/convert_to_mzML.sh -i \$rawFile
+    done
     """
 }
 
 // Workflow
 workflow {
-    rawFiles | convert_to_mzML
+    rawFileBatches | convert_to_mzML_batch
 }
