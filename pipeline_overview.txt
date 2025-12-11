@@ -1,0 +1,59 @@
+General Overview and Rational for DIA-NN Search protein_SIP_pipeline
+
+Goal:
+Take a folder of Thermo .raw files \
+    Input folder into ThermoRawFileParser \
+    Parse individual files, one-by-one, and convert to .mzML for DIA-NN compatibility \
+    Pipe all converted files into a combined DIA-NN search alongside specified .fasta file \
+    Output should be a DIA-NN results folder
+
+Methods:
+Utilize containerize processes and cloud computing.
+
+Containers:
+    ThermoRawFileParser
+        | containing the convert_to_mzML.sh script
+    DIA-NN
+
+Input Files:
+A folder of .raw files to be stored on some driver OTHER than the home directory.
+Examples include scratch and/or project storage. 
+    Ex. /scratch/$USER/rawfiles/*.raw
+
+Scripts:
+These most likely live on Github servers, to be called when needed. 
+The processing node used automatically downloads these when running Nextflow.
+
+Nextflow:
+This can run from your home directory because it's small.
+Direct temporary files to scratch directory to avoid clogging up home directory.
+
+Overview:
+    ┌────────────────────────────┐
+    │   GitHub Repository        │
+    │  main.nf, scripts, config  │
+    └─────────────┬──────────────┘
+                  │
+                  ▼
+    ┌────────────────────────────┐
+    │   Nextflow orchestrator    │
+    │   (runs on login node)     │
+    └─────────────┬──────────────┘
+                  │ Slurm submits jobs
+                  ▼
+    ┌────────────────────────────┐
+    │     Compute Node (cloud)   │
+    │  Running your container    │
+    │  TRFP.sif (Apptainer)      │
+    └─────────────┬──────────────┘
+                  │
+   raw files read │ from scratch
+                  ▼
+┌────────────────────────────────────────┐
+│         /scratch or /project           │
+│  rawfiles/*.raw → mzML/*.mzML          │
+└────────────────────────────────────────┘
+
+
+
+        
