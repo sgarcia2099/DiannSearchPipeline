@@ -4,6 +4,6 @@ if [ -d "results" ]; then rm -r results; fi
 
 if [ -d "work" ];    then rm -r work; fi
 
-rm .nextflow*
+rm -f .nextflow*
 
 echo "\n Reset! \n"
