@@ -38,8 +38,8 @@ cat > "$SBATCH_FILE" << EOF
 #SBATCH --output=logs/${BASENAME}_%j.out
 #SBATCH --error=logs/${BASENAME}_%j.err
 
-rm -rf ${OUT_DIR}/*
-rm -rf work/
+#rm -rf ${OUT_DIR}/*
+#rm -rf work/
 
 export NXF_OPTS="-Xms10g -Xmx10g"
 
