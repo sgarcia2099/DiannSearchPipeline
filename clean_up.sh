@@ -1,7 +1,7 @@
 #For resetting nextflow directory during debugging
 
-rm -f .nextflow*
-rm -f logs
+if [ -d ".nextflow*" ]; then rm -r .nextflow*; fi
+if [ -d "logs" ];       then rm -r logs; fi
 
 cd /lustre/or-scratch/cades-bsd/$USER
 
