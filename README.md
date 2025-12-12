@@ -8,7 +8,7 @@ A scalable Nextflow workflow that converts Thermo `.raw` files into `.mzML` file
 - Parallel conversion of `.raw` files to `.mzML`
 - Fully reproducible with Apptainer/Singularity
 - Optimized for Slurm HPC environments
-- Work directories default to `/scratch/$USER`
+- Work directories default to `/lustre/or-scratch/cades-bsd/$USER`
 
 ---
 
@@ -41,22 +41,22 @@ apptainer build containers/TRFP.sif docker://<your-docker-image>
 
 ### Running the Pipeline
 
-1. Place `.raw` files in `/scratch` (recommended for large datasets):
+1. Place `.raw` files in `/lustre/or-scratch/cades-bsd/$USER/rawfiles` (recommended for large datasets):
    ```bash
-   mkdir -p /scratch/$USER/rawfiles && cp *.raw /scratch/$USER/rawfiles/
+   mkdir -p /lustre/or-scratch/cades-bsd/$USER/rawfiles && cp *.raw /lustre/or-scratch/cades-bsd/$USER/rawfiles/
    ```
 
 2. Run the pipeline:
    ```bash
    nextflow run main.nf \
-       --rawDir /scratch/$USER/rawfiles \
-       --outDir /scratch/$USER/mzml_output \
+       --rawDir /lustre/or-scratch/cades-bsd/$USER/rawfiles \
+       --outDir /lustre/or-scratch/cades-bsd/$USER/mzml_output \
        -with-singularity containers/TRFP.sif
    ```
 
 3. Outputs are written to:
    ```
-   /scratch/$USER/mzml_output/
+   /lustre/or-scratch/cades-bsd/$USER/mzml_output/
    ```
 
 ---
@@ -84,10 +84,6 @@ apptainer build containers/TRFP.sif docker://<your-docker-image>
 | [`nextflow.config`](nextflow.config) | Sets Slurm execution parameters            |
 | [`bin/convert_to_mzML.sh`](bin/convert_to_mzML.sh) | Wrapper script for the container         |
 | [`containers/TRFP.sif`](containers/) | Apptainer container with ThermoRawFileParser |
-| `/scratch`                   | Recommended storage for raw data         |
+| `/lustre/or-scratch/cades-bsd/$USER/rawfiles`                   | Recommended storage for raw data         |
 
 ---
-
-## License
-
-MIT
