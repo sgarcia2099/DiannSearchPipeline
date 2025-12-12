@@ -36,7 +36,6 @@ nextflow -C nextflow.config run main.nf \
     --raw_file "$RAW" \
     --outdir "$OUT_DIR" \
     --container "$CONTAINER" \
-    -with-singularity "$CONTAINER" \
     -resume \
     -with-timeline ${OUT_DIR}/timeline.html \
     -with-dag ${OUT_DIR}/flowchart.html \
