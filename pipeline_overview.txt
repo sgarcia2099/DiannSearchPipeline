@@ -18,7 +18,7 @@ Containers:
 Input Files:
 A folder of .raw files to be stored on some driver OTHER than the home directory.
 Examples include scratch and/or project storage. 
-    Ex. /scratch/$USER/rawfiles/*.raw
+    Ex. /lustre/or-scratch/cades-bsd/$USER/rawfiles/*.raw
 
 Scripts:
 These most likely live on Github servers, to be called when needed. 
