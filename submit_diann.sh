@@ -1,16 +1,22 @@
 #!/bin/bash
 
+echo 'Initializing\n'
+
 RAW_DIR="/lustre/or-scratch/cades-bsd/$USER/rawfiles"
 CONTAINER="quay.io/biocontainers/thermorawfileparser:1.4.5--h05cac1d_1"
 OUT_BASE="/lustre/or-scratch/cades-bsd/$USER/results"
 WORK_DIR="/lustre/or-scratch/cades-bsd/$USER/work"
 STASH_DIR="/lustre/or-scratch/cades-bsd/$USER/stash"
 
+echo 'Making directories...\n'
+
 # Create necessary directories if they don't exist
 mkdir -p logs
 mkdir -p "$OUT_BASE"
 mkdir -p "$WORK_DIR"
 mkdir -p "$STASH_DIR"
+
+echo 'Parsing through .raw files...\n'
 
 for RAW in "$RAW_DIR"/*.raw; do
     BASENAME=$(basename "$RAW" .raw)
