@@ -1,0 +1,68 @@
+########################################
+# Nextflow Pipeline: DiannSearchPipeline
+########################################
+
+# --- Nextflow internal directories ---
+work/
+.cache/
+.nextflow*
+.nxf*
+trace*
+timeline.html
+report.html
+dag.json
+executor/
+publish/
+
+# --- Pipeline data files (do NOT version) ---
+*.raw
+*.RAW
+*.mzML
+*.mzML.gz
+*.fasta
+*.tsv
+*.csv
+*.speclib
+*.dia
+*.h5
+*.hdf5
+
+# --- Containers (pull externally) ---
+*.sif
+*.img
+*.sqsh
+*.sandbox
+
+# --- bin + scripts safety ---
+*.o
+*.err
+
+# --- Log files ---
+logs/
+*.log
+slurm-*
+
+# --- Python support ---
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+env/
+.conda/
+
+# --- R support ---
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+
+# --- OS/Editor Junk ---
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.tmp
+
+########################################
+# END OF FILE
+########################################
