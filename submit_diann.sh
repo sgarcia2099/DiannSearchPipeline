@@ -16,7 +16,6 @@ for RAW in "$RAW_DIR"/*.raw; do
 
 cat > "$SBATCH_FILE" << EOF
 #!/bin/bash
-#SBATCH --exclude=or-condo-c67
 #SBATCH -A bsd
 #SBATCH -p burst
 #SBATCH --qos=default
