@@ -4,8 +4,6 @@
 params.raw_file = params.raw_file ?: null
 params.raw_dir  = params.raw_dir  ?: null
 params.outdir   = params.outdir   ?: 'results'
-params.container = params.container ?: 'containers/TRFP.sif'
-
 
 // Input Channel
 // Accept either one raw file OR a directory of raw files
@@ -25,7 +23,8 @@ process convert_to_mzML {
 
     publishDir params.outdir, mode: 'copy'
 
-    container params.container
+    container 'quay.io/biocontainers/thermorawfileparser:1.4.5--h05cac1d_1'
+    singularity.enabled = true
 
     input:
         path rawFile

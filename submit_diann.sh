@@ -1,7 +1,7 @@
 #!/bin/bash
 
 RAW_DIR="/lustre/or-scratch/cades-bsd/$USER/rawfiles"
-CONTAINER="containers/TRFP.sif"
+CONTAINER="quay.io/biocontainers/thermorawfileparser:1.4.5--h05cac1d_1"
 OUT_BASE="/lustre/or-scratch/cades-bsd/$USER/results"
 
 mkdir -p logs
