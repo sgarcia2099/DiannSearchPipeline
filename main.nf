@@ -1,9 +1,20 @@
 #!/usr/bin/env nextflow
 
+nextflow.enable.dsl=2
+
 // Parameters
-params.raw_file = params.raw_file ?: null
-params.raw_dir  = params.raw_dir  ?: null
-params.outdir   = params.outdir   ?: 'results'
+params.raw_file = null
+params.raw_dir  = null
+params.outdir   = 'results'
+
+singularity {
+    enabled = true
+    autoMounts = true
+}
+
+process {
+    executor = 'slurm'
+}
 
 // Input Channel
 // Accept either one raw file OR a directory of raw files
