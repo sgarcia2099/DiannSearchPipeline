@@ -1,21 +1,14 @@
 #!/bin/bash
 
-mkdir -p \
-/lustre/or-scratch/cades-bsd/$USER/results \
-/lustre/or-scratch/cades-bsd/$USER/cache \
-/lustre/or-scratch/cades-bsd/$USER/tmp
-
 set -euo pipefail
 
 BASE="/lustre/or-scratch/cades-bsd/$USER"
 
 # Directories to use
-export NXF_SINGULARITY_CACHEDIR="$BASE/cache"
 export SINGULARITY_TMPDIR="$BASE/tmp"
 export SINGULARITY_CACHEDIR="$BASE/cache"
 
 mkdir -p \
-  "$NXF_SINGULARITY_CACHEDIR" \
   "$SINGULARITY_TMPDIR" \
   "$SINGULARITY_CACHEDIR" \
   logs \
