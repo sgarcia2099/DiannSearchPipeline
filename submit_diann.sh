@@ -1,4 +1,11 @@
 #!/bin/bash
+
+mkdir -p \
+/lustre/or-scratch/cades-bsd/$USER/results \
+/lustre/or-scratch/cades-bsd/$USER/singularity_cache \
+/lustre/or-scratch/cades-bsd/$USER/apptainer_tmp \
+/lustre/or-scratch/cades-bsd/$USER/apptainer_cache
+
 #SBATCH -A bsd
 #SBATCH -p burst
 #SBATCH --qos=default
