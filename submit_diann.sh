@@ -40,8 +40,6 @@ cat > "$SBATCH_FILE" << EOF
 
 set -euo pipefail
 
-module load singularity # Load Singularity module if necessary
-
 # Run Nextflow
 nextflow run main.nf \
     --raw_dir "$BASE/rawfiles" \
