@@ -15,8 +15,8 @@ OUTDIR=$(dirname "$RAWFILE")
 OUTFILE="${RAWFILE%.raw}.mzML"
 
 echo "[INFO] Converting raw file: $RAWFILE"
-echo "[INFO] Output directory:   $OUTDIR"
-echo "[INFO] Output file:        $OUTFILE"
+echo "[INFO] Output directory: $OUTDIR"
+echo "[INFO] Output file: $OUTFILE"
 
 # Singularity container image path
 CONTAINER_IMAGE="/lustre/or-scratch/cades-bsd/$USER/cache/quay.io-biocontainers-thermorawfileparser:1.4.5--h05cac1d_1.img"
@@ -28,7 +28,7 @@ if [[ ! -f "$CONTAINER_IMAGE" ]]; then
 fi
 
 # Bind necessary paths and execute the parser inside the container
-singularity exec \
+singularity exec --env USER="${USER}"\
     --bind /lustre:/lustre \
     "$CONTAINER_IMAGE" \
     ThermoRawFileParser \
