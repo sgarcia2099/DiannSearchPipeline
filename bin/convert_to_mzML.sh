@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+echo "[DEBUG] USER variable: '${USER-}'" >&2
+
 set -euo pipefail
 
 # Input RAW file
