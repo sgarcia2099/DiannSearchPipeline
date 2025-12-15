@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-echo "[DEBUG] $PWD" >&2
-
 set -euo pipefail
+module load apptainer
 
 # Input RAW file
 RAWFILE="$1"
