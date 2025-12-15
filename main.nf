@@ -1,26 +1,25 @@
 #!/usr/bin/env nextflow
-
 nextflow.enable.dsl=2
 
+// --------------------
 // Parameters
-params.raw_file = null
-params.raw_dir  = null
-params.outdir   = 'results'
+// --------------------
+params.raw_dir = null
+params.outdir  = 'results'
 
-// Input Channel
-// Accept either one raw file OR a directory of raw files
+// --------------------
+// Input channel
+// --------------------
 Channel
-    .fromPath(
-        params.raw_file 
-            ? params.raw_file 
-            : "${params.raw_dir}/*.raw"
-    )
+    .fromPath("${params.raw_dir}/*.raw")
     .set { raw_files }
 
-
-// Process: Convert .raw → .mzML
+// --------------------
+// Process: RAW → mzML
+// --------------------
 process convert_to_mzML {
-    tag "$rawFile"
+
+    tag { rawFile.simpleName }
     label 'med'
 
     publishDir params.outdir, mode: 'copy'
@@ -39,8 +38,9 @@ process convert_to_mzML {
     """
 }
 
-
-// Workflow definition
+// --------------------
+// Workflow
+// --------------------
 workflow {
     convert_to_mzML(raw_files)
 }
