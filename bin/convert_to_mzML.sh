@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-echo "[DEBUG] USER variable: '${USER-}'" >&2
+echo "[DEBUG] $PWD" >&2
 
 set -euo pipefail
 
