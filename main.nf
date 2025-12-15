@@ -7,15 +7,6 @@ params.raw_file = null
 params.raw_dir  = null
 params.outdir   = 'results'
 
-singularity {
-    enabled = true
-    autoMounts = true
-}
-
-process {
-    executor = 'slurm'
-}
-
 // Input Channel
 // Accept either one raw file OR a directory of raw files
 Channel
