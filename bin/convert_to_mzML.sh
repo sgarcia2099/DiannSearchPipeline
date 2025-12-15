@@ -30,7 +30,7 @@ if [[ ! -f "$CONTAINER_IMAGE" ]]; then
 fi
 
 # Bind necessary paths and execute the parser inside the container
-singularity exec \
+apptainer exec \
     --bind /lustre:/lustre \
     "$CONTAINER_IMAGE" \
     ThermoRawFileParser \
