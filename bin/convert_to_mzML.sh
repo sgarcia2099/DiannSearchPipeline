@@ -21,7 +21,7 @@ echo "[INFO] Output directory: $OUTDIR"
 echo "[INFO] Output file: $OUTFILE"
 
 # Singularity container image path
-CONTAINER_IMAGE="/lustre/or-scratch/cades-bsd/$USER/cache/quay.io-biocontainers-thermorawfileparser:1.4.5--h05cac1d_1.img"
+CONTAINER_IMAGE="/lustre/or-scratch/cades-bsd/jkg/cache/quay.io-biocontainers-thermorawfileparser:1.4.5--h05cac1d_1.img"
 
 # Check if the container image exists
 if [[ ! -f "$CONTAINER_IMAGE" ]]; then
@@ -30,7 +30,7 @@ if [[ ! -f "$CONTAINER_IMAGE" ]]; then
 fi
 
 # Bind necessary paths and execute the parser inside the container
-singularity exec --env USER="${USER}"\
+singularity exec \
     --bind /lustre:/lustre \
     "$CONTAINER_IMAGE" \
     ThermoRawFileParser \
