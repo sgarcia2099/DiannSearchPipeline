@@ -26,7 +26,6 @@ process convert_to_mzML {
     publishDir params.outdir, mode: 'copy'
 
     container 'quay.io/biocontainers/thermorawfileparser:1.4.5--h05cac1d_1'
-    singularity.enabled = true
 
     input:
         path rawFile
