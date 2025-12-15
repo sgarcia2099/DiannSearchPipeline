@@ -11,7 +11,7 @@ params.outdir  = 'results'
 // Input channel
 // --------------------
 Channel
-    .fromPath("${params.raw_dir}/*.raw")
+    .fromPath(file("${params.raw_dir}/*.raw"))
     .set { raw_files }
 
 // --------------------
