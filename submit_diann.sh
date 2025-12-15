@@ -2,23 +2,22 @@
 
 mkdir -p \
 /lustre/or-scratch/cades-bsd/$USER/results \
-/lustre/or-scratch/cades-bsd/$USER/singularity_cache \
-/lustre/or-scratch/cades-bsd/$USER/apptainer_tmp \
-/lustre/or-scratch/cades-bsd/$USER/apptainer_cache
+/lustre/or-scratch/cades-bsd/$USER/cache \
+/lustre/or-scratch/cades-bsd/$USER/tmp
 
 set -euo pipefail
 
 BASE="/lustre/or-scratch/cades-bsd/$USER"
 
 # Directories to use
-export NXF_SINGULARITY_CACHEDIR="$BASE/singularity_cache"
-export APPTAINER_TMPDIR="$BASE/apptainer_tmp"
-export APPTAINER_CACHEDIR="$BASE/apptainer_cache"
+export NXF_SINGULARITY_CACHEDIR="$BASE/cache"
+export SINGULARITY_TMPDIR="$BASE/tmp"
+export SINGULARITY_CACHEDIR="$BASE/cache"
 
 mkdir -p \
   "$NXF_SINGULARITY_CACHEDIR" \
-  "$APPTAINER_TMPDIR" \
-  "$APPTAINER_CACHEDIR" \
+  "$SINGULARITY_TMPDIR" \
+  "$SINGULARITY_CACHEDIR" \
   logs \
   "$BASE/results"
 
