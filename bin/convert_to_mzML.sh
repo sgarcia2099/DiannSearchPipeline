@@ -19,27 +19,27 @@ echo "[INFO] Output directory: $OUTDIR"
 echo "[INFO] Output file: $OUTFILE"
 
 # Singularity container image path
-CONTAINER_IMAGE="/lustre/or-scratch/cades-bsd/jkg/cache/quay.io-biocontainers-thermorawfileparser-1.4.5--h05cac1d_1.img"
+#CONTAINER_IMAGE="/lustre/or-scratch/cades-bsd/jkg/cache/quay.io-biocontainers-thermorawfileparser-1.4.5--h05cac1d_1.img"
 
 # Check if the container image exists
-if [[ ! -f "$CONTAINER_IMAGE" ]]; then
-    echo "ERROR: Singularity image not found: $CONTAINER_IMAGE" >&2
-    exit 1
-fi
+#if [[ ! -f "$CONTAINER_IMAGE" ]]; then
+#    echo "ERROR: Singularity image not found: $CONTAINER_IMAGE" >&2
+#    exit 1
+#fi
 
 # Bind necessary paths and execute the parser inside the container
-singularity exec \
-    --bind /lustre:/lustre \
-    "$CONTAINER_IMAGE" \
+#singularity exec \
+#    --bind /lustre:/lustre \
+#    "$CONTAINER_IMAGE" \
     ThermoRawFileParser \
         -i "$RAWFILE" \
         -o "$OUTDIR" \
         -f 1 \
-        --gzip
+#        --gzip
 
-if [[ -f "$OUTFILE" ]]; then
-    echo "[INFO] Conversion successful. Output file: $OUTFILE"
-else
-    echo "ERROR: Conversion failed. Output file was not created." >&2
-    exit 1
-fi
+#if [[ -f "$OUTFILE" ]]; then
+#    echo "[INFO] Conversion successful. Output file: $OUTFILE"
+#else
+#    echo "ERROR: Conversion failed. Output file was not created." >&2
+#    exit 1
+#fi
