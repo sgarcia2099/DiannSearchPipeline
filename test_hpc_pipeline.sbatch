@@ -5,7 +5,7 @@
 #SBATCH -t 00:10:00
 #SBATCH --nodes=1
 #SBATCH -c 1
-#SBATCH --mem=1g
+#SBATCH --mem=16g
 #SBATCH -J hpc_pipeline_test
 #SBATCH --output=logs/test_pipeline_%j.out
 #SBATCH --error=logs/test_pipeline_%j.err
