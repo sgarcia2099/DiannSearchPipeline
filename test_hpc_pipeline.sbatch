@@ -63,9 +63,9 @@ echo "Container image is valid and available."
 
 # Run a simple command inside the container to validate it works
 singularity exec \
-  --bind "$RESULT_DIR:/results" \
+  --bind "$RESULT_DIR" \
   "$CONTAINER_IMAGE" \
-  bash -c "echo 'HPC Test Passed' > result.txt"
+  bash -c "echo 'HPC Test Passed' > $RESULT_DIR/result.txt"
 
 # Verify that the test file is created
 if [[ ! -f "$TEST_FILE" ]]; then
