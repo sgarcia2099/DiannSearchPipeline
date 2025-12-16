@@ -29,7 +29,7 @@ mkdir -p \
   "$RESULT_DIR" \
   "$LOG_DIR"
 
-singularity pull --dir $SINGULARITY_CACHEDIR quay.io/biocontainers/thermorawfileparser:1.4.5--h05cac1d_1
+singularity pull --dir $SINGULARITY_CACHEDIR docker://quay.io/biocontainers/thermorawfileparser:1.4.5--h05cac1d_1
 
 # Check if key utilities and dependencies are available
 for cmd in singularity nextflow; do
