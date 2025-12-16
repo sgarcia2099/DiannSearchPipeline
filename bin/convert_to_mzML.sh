@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-module load apptainer
 
 # Input RAW file
 RAWFILE="$1"
