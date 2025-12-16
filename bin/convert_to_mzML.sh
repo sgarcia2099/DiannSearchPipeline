@@ -19,7 +19,7 @@ echo "[INFO] Output directory: $OUTDIR"
 echo "[INFO] Output file: $OUTFILE"
 
 # Singularity container image path
-CONTAINER_IMAGE="/lustre/or-scratch/cades-bsd/jkg/cache/thermorawfileparser-1.4.5--h05cac1d_1.sif"
+CONTAINER_IMAGE="/lustre/or-scratch/cades-bsd/jkg/cache/quay.io-biocontainers-thermorawfileparser-1.4.5--h05cac1d_1.img"
 
 # Check if the container image exists
 if [[ ! -f "$CONTAINER_IMAGE" ]]; then
