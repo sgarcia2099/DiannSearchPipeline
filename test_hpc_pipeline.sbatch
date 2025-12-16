@@ -19,7 +19,7 @@ SINGULARITY_CACHEDIR="$BASE/cache"
 RESULT_DIR="$BASE/test_results"
 RAWFILES_DIR="$BASE/rawfiles"
 LOG_DIR="logs"
-CONTAINER_IMAGE="quay.io/biocontainers/thermorawfileparser-1.4.5--h05cac1d_1.sif"
+CONTAINER_IMAGE="thermorawfileparser_1.4.5--h05cac1d_1.sif"
 TEST_FILE="$RESULT_DIR/result.txt"
 
 # Create necessary directories
