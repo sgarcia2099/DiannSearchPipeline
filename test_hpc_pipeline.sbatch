@@ -12,9 +12,6 @@
 
 set -euo pipefail
 
-# Load required module for Singularity
-module load singularity
-
 # Define directories and paths
 BASE="/lustre/or-scratch/cades-bsd/$USER"
 SINGULARITY_TMPDIR="$BASE/tmp"
