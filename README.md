@@ -13,9 +13,6 @@ A scalable Nextflow workflow that converts Thermo `.raw` files into `.mzML` file
 ### Running the Pipeline
 
 1. Place `.raw` files in `/lustre/or-scratch/cades-bsd/$USER/rawfiles` (recommended for large datasets):
-   ```bash
-   mkdir -p /lustre/or-scratch/cades-bsd/$USER/rawfiles && cp *.raw /lustre/or-scratch/cades-bsd/$USER/rawfiles/
-   ```
 
 2. Run the pipeline:
    ```bash
