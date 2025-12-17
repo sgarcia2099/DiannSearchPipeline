@@ -25,3 +25,6 @@ A scalable Nextflow workflow that converts Thermo `.raw` files into `.mzML` file
    ```
 
 ---
+### Container
+
+Using the **ThermoRawFileParser** container from [biocontainers/thermorawfileparser/tags](https://quay.io/repository/biocontainers/thermorawfileparser?tab=tags).
