@@ -36,8 +36,8 @@ set -euo pipefail
 nextflow run main.nf \
     --raw_dir "$BASE/rawfiles" \
     --outdir "$BASE/results" \
+    --diann_version "$1" \
     -resume \
-    -with-singularity quay.io/biocontainers/thermorawfileparser:1.4.5--h05cac1d_1
 EOF
 
 # Submit the SBATCH script
