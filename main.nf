@@ -1,20 +1,13 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-
 // Input channel
-
 Channel
     .fromPath(file("${params.raw_dir}/*.raw"))
     .set { raw_files }
 
-
 // Process: RAW → mzML
-
 process convert_to_mzML {
-
-    tag { rawFile.simpleName }
-    label 'med'
 
     publishDir params.outdir, mode: 'copy'
 
@@ -30,9 +23,7 @@ process convert_to_mzML {
     """
 }
 
-
 // Workflow
-
 workflow {
     convert_to_mzML(raw_files)
 }
