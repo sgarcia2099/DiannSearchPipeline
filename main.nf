@@ -3,7 +3,7 @@ nextflow.enable.dsl=2
 
 // Input channel
 Channel
-    .fromPath(file("${params.raw_dir}/*.raw"))
+    .fromPath("${params.raw_dir}/*.raw", checkIfExists: true)
     .set { raw_files }
 
 // Process: RAW → mzML
