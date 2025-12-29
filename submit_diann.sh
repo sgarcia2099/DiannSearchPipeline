@@ -22,10 +22,10 @@ cat > "$SBATCH_FILE" << EOF
 #SBATCH -A bsd
 #SBATCH -p burst
 #SBATCH --qos=default
-#SBATCH -t 10:00:00
+#SBATCH -t 1-00:00:00
 #SBATCH --nodes=1
-#SBATCH -c 4
-#SBATCH --mem=11g
+#SBATCH -c 32
+#SBATCH --mem=128g
 #SBATCH -J diann_nf
 #SBATCH --output=logs/nf_%j.out
 #SBATCH --error=logs/nf_%j.err

@@ -12,6 +12,8 @@ Channel
 // Process: RAW → mzML
 process convert_to_mzML {
     
+    label 'small'
+
     container = 'quay.io/biocontainers/thermorawfileparser-1.4.5--h05cac1d_1'
     publishDir params.outdir, mode: 'copy'
 
@@ -30,6 +32,8 @@ process convert_to_mzML {
 // Run DIA-NN search
 process diann_search {
 
+    label 'large'
+    
     container = "garciasarah2099/diannpipeline:${params.diann_version}"
     publishDir params.outdir, mode: 'copy'
 
