@@ -9,24 +9,29 @@ Channel
     .fromPath("${params.raw_dir}/*.raw", checkIfExists: true)
     .set { raw_files }
 
-// Process: RAW → mzML
-process convert_to_mzML {
-    
-    label 'small'
+Channel
+    .fromPath(params.fasta)
 
-    container = 'quay.io/biocontainers/thermorawfileparser-1.4.5--h05cac1d_1'
+// Generate Spectral Library
+process generate_library {
+    
+    label 'large'
+    container = "garciasarah2099/diannpipeline:${params.diann_version}"
     publishDir params.outdir, mode: 'copy'
 
     input:
-        path rawFile
+        path fasta_files
 
     output:
-        path "${rawFile.simpleName}.mzML"
+        path "*.predicted.speclib" into generated_library
 
     script:
     """
-    convert_to_mzML.sh "${rawFile}"
+    echo "Generating spectral library..."
+
+    cp ${params.outdir}/library_${SLURM_JOB_ID}.predicted.speclib .
     """
+
 }
 
 // Run DIA-NN search
@@ -38,21 +43,42 @@ process diann_search {
     publishDir params.outdir, mode: 'copy'
 
     input:
-        path mzML_files
+        path raw_files
+        path diann_config
+        path spectral_library from generated_library.collect()
 
     output:
         path "*.tsv"
 
     script:
     """
-    echo 'This is where the DIA-NN command goes' > test.tsv
+    echo "Found \$(ls *.raw | wc -l) RAW files"
+    echo "Using spectral library: \$(ls *.predicted.speclib)"
+
+    CONFIG_COPY="diann_config_${SLURM_JOB_ID}.cfg"
+    cp ${diann_config} \$CONFIG_COPY
+
+    # Replace placeholders
+    sed -i "s|\\\${RAW_DIR}|.|g" \$CONFIG_COPY
+    sed -i "s|\\\${LIBRARY}|\$(ls *.tsv)|g" \$CONFIG_COPY
+    sed -i "s|\\\${FASTA}|${params.fasta}|g" \$CONFIG_COPY
+    sed -i "s|\\\${OUTDIR}|${params.outdir}|g" \$CONFIG_COPY
+
+    # Append all RAW files as --f entries
+    for f in *.raw; do
+        echo "--f \$f" >> \$CONFIG_COPY
+    done
+
+    echo "Using config file:"
+    cat \$CONFIG_COPY
+
+    # Run DIA-NN search
+    DIA-NN --conf \$CONFIG_COPY --out results_\${SLURM_JOB_ID}.tsv
     """
 }
 
 // Workflow
 workflow {
-    diann_search(
-        convert_to_mzML(raw_files)
-            .collect()
-    )
+    def config_file = file("diann_config.cfg")
+    diann_search(raw_files.collect(), config_file)
 }
