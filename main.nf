@@ -35,8 +35,8 @@ process generate_library {
     cp ${speclib_config_file} \$CONFIG_COPY
 
     # Replace placeholders in the spectral library config file
-    sed -i "s|\\\${FASTA}|$(echo ${fasta_files} | awk 'NR==1')|g" \$CONFIG_COPY
-    sed -i "s|\\\${FASTA_CONTAM}|$(echo ${fasta_files} | awk 'NR==2')|g" \$CONFIG_COPY
+    sed -i "s|\\\${FASTA}|${fasta_files[0]}|g" \$CONFIG_COPY
+    sed -i "s|\\\${FASTA_CONTAM}|${fasta_contam_files[0]}|g" \$CONFIG_COPY
     sed -i "s|\\\${OUTDIR}|${params.outdir}|g" \$CONFIG_COPY
 
     # Run DIA-NN to generate the spectral library
