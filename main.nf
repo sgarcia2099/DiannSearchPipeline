@@ -25,7 +25,7 @@ process generate_library {
         path speclib_config_file
 
     output:
-        file "library_${SLURM_JOB_ID}.predicted.speclib" into generated_library
+        file "*.predicted.speclib" into generated_library
 
     script:
     """
