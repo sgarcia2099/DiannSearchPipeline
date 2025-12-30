@@ -58,7 +58,7 @@ process diann_search {
         path spectral_library from generated_library
 
     output:
-        path "*.tsv"
+        path "*.*"
 
     script:
     """

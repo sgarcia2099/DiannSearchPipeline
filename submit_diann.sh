@@ -5,6 +5,7 @@ set -euo pipefail
 BASE="/lustre/or-scratch/cades-bsd/$USER"
 
 # Directories to use
+export SINGULARITY_BINDPATH="$BASE"
 export SINGULARITY_TMPDIR="$BASE/tmp"
 export SINGULARITY_CACHEDIR="$BASE/cache"
 
