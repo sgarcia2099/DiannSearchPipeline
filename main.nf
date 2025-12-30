@@ -10,8 +10,8 @@ Channel
     .set { raw_files }
 
 Channel
-    .fromPath([params.fasta, params.fastaContam], checkIfExists: true)
-    .flatten()
+    .fromPath(params.fasta, checkIfExists: true)
+    .combine(Channel.fromPath(params.fastaContam, checkIfExists: true))
     .set { fasta_files }
 
 // Generate Spectral Library
