@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -euo pipefail
+set -euxo pipefail
 
 if [ "$#" -eq 0 ]; then
     echo "Error: This script requires the DIA-NN version as an argument (e.g., ./submit_diann.sh 2.3.1)."
@@ -44,7 +44,7 @@ cat > "$SBATCH_FILE" <<EOF
 #SBATCH --output=logs/nf_%j.out
 #SBATCH --error=logs/nf_%j.err
 
-set -euo pipefail
+set -euxo pipefail
 
 # Run Nextflow
 nextflow run main.nf \
