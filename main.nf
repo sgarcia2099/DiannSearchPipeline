@@ -16,7 +16,6 @@ Channel
 process generate_library {
     
     label 'large'
-    container = "garciasarah2099/diannpipeline:${params.diann_version}"
     publishDir params.outdir, mode: 'copy'
 
     input:
@@ -38,8 +37,6 @@ process generate_library {
 process diann_search {
 
     label 'large'
-    
-    container = "garciasarah2099/diannpipeline:${params.diann_version}"
     publishDir params.outdir, mode: 'copy'
 
     input:
