@@ -107,6 +107,6 @@ workflow {
         raw_files.collect(),
         fasta_files,
         search_config_file,
-        generated_library.out.generated_library
+        generate_library.out.generated_library
     )
 }
