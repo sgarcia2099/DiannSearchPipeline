@@ -9,9 +9,8 @@ Channel
     .fromPath("${params.raw_dir}/*.raw", checkIfExists: true)
     .set { raw_files }
 
-// Input channel for fasta files
 Channel
-    .fromFilePairs([params.fasta, params.fastaContam], checkIfExists: true)
+    .fromPath([params.fasta, params.fastaContam], checkIfExists: true)
     .flatten()
     .set { fasta_files }
 
@@ -26,7 +25,7 @@ process generate_library {
         path speclib_config_file
 
     output:
-        file "*.predicted.speclib" into generated_library
+        file "*.predicted.speclib", emit: generated_library
 
     script:
     """
