@@ -25,7 +25,7 @@ process generate_library {
         path speclib_config_file
 
     output:
-        file "*.predicted.speclib", emit: generated_library
+        path "*.predicted.speclib", emit: generated_library
 
     script:
     """
@@ -36,7 +36,7 @@ process generate_library {
 
     # Replace placeholders in the spectral library config file
     sed -i "s|\\\${FASTA}|${fasta_files[0]}|g" \$CONFIG_COPY
-    sed -i "s|\\\${FASTA_CONTAM}|${fasta_contam_files[0]}|g" \$CONFIG_COPY
+    sed -i "s|\\\${FASTA_CONTAM}|${fasta_files[1]}|g" \$CONFIG_COPY
     sed -i "s|\\\${OUTDIR}|${params.outdir}|g" \$CONFIG_COPY
 
     # Run DIA-NN to generate the spectral library
