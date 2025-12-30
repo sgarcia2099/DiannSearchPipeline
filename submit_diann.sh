@@ -2,18 +2,31 @@
 
 set -euo pipefail
 
+if [ "$#" -eq 0 ]; then
+    echo "Error: This script requires the DIA-NN version as an argument (e.g., ./submit_diann.sh 2.3.1)."
+    exit 1
+fi
+
+DIANN_VERSION="$1"
+
 BASE="/lustre/or-scratch/cades-bsd/$USER"
 
 # Directories to use
-export SINGULARITY_BINDPATH="$BASE"
 export SINGULARITY_TMPDIR="$BASE/tmp"
 export SINGULARITY_CACHEDIR="$BASE/cache"
+export SINGULARITY_BINDPATH="$BASE"
 
 mkdir -p \
   "$SINGULARITY_TMPDIR" \
   "$SINGULARITY_CACHEDIR" \
   logs \
   "$BASE/results"
+
+# Sanity check for RAW files
+if [ ! -d "$BASE/rawfiles" ] || [ -z "$(ls -A "$BASE/rawfiles" 2>/dev/null)" ]; then
+    echo "Error: No .raw files found in $BASE/rawfiles."
+    exit 1
+fi
 
 # Generate the SBATCH script
 SBATCH_FILE="run_diann.sbatch"
@@ -37,8 +50,8 @@ set -euo pipefail
 nextflow run main.nf \
     --raw_dir "$BASE/rawfiles" \
     --outdir "$BASE/results" \
-    --diann_version "$1" \
-    -resume \
+    --diann_version "$DIANN_VERSION" \
+    -resume
 EOF
 
 # Submit the SBATCH script
