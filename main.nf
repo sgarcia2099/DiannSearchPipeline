@@ -39,7 +39,7 @@ process generate_library {
     sed -i "s|\\\${OUTDIR}|${params.outdir}|g" \$CONFIG_COPY
 
     # Run DIA-NN to generate the spectral library
-    diann-2.3.1/diann-linux --conf \$CONFIG_COPY --out ${params.outdir}/library_${SLURM_JOB_ID}.predicted.speclib
+    diann-2.3.1/diann-linux --cfg \$CONFIG_COPY --out ${params.outdir}/library_${SLURM_JOB_ID}.predicted.speclib
     """
 
 }
@@ -78,7 +78,7 @@ process diann_search {
     done
 
     diann-2.3.1/diann-linux \
-        --conf \$CONFIG_COPY \
+        --cfg \$CONFIG_COPY \
         --out results_\${SLURM_JOB_ID}.tsv
     """
 }
