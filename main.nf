@@ -55,7 +55,7 @@ process diann_search {
         path raw_files
         path fasta_files
         path search_config_file
-        path spectral_library from generated_library
+        path spectral_library
 
     output:
         path "*.*"
@@ -63,35 +63,27 @@ process diann_search {
     script:
     """
     echo "Found \$(ls *.raw | wc -l) RAW files"
-    echo "Using spectral library: \$(ls *.predicted.speclib)"
+    echo "Using spectral library: ${spectral_library}"
 
     CONFIG_COPY="diann_config_${SLURM_JOB_ID}.cfg"
     cp ${search_config_file} \$CONFIG_COPY
 
-    # Replace placeholders in the search config file
     sed -i "s|\\\${RAW_DIR}|.|g" \$CONFIG_COPY
     sed -i "s|\\\${LIBRARY}|${spectral_library}|g" \$CONFIG_COPY
-
-    # Use fasta_files directly without subshell commands
-    fasta_file_1=\$(head -n 1 ${fasta_files})
-    fasta_contam_file=\$(tail -n 1 ${fasta_files})
-
-    sed -i "s|\\\${FASTA}|\${fasta_file_1}|g" \$CONFIG_COPY
-    sed -i "s|\\\${FASTA_CONTAM}|\${fasta_contam_file}|g" \$CONFIG_COPY
+    sed -i "s|\\\${FASTA}|${fasta_files[0]}|g" \$CONFIG_COPY
+    sed -i "s|\\\${FASTA_CONTAM}|${fasta_files[1]}|g" \$CONFIG_COPY
     sed -i "s|\\\${OUTDIR}|${params.outdir}|g" \$CONFIG_COPY
 
-    # Append all RAW files as --f entries
     for f in *.raw; do
         echo "--f \$f" >> \$CONFIG_COPY
     done
 
-    echo "Using config file:"
-    cat \$CONFIG_COPY
-
-    # Run DIA-NN search
-    diann-2.3.1/diann-linux --conf \$CONFIG_COPY --out results_\${SLURM_JOB_ID}.tsv
+    diann-2.3.1/diann-linux \
+        --conf \$CONFIG_COPY \
+        --out results_\${SLURM_JOB_ID}.tsv
     """
 }
+
 
 // Workflow
 workflow {
