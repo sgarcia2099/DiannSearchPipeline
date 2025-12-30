@@ -70,9 +70,14 @@ process diann_search {
 
     # Replace placeholders in the search config file
     sed -i "s|\\\${RAW_DIR}|.|g" \$CONFIG_COPY
-    sed -i "s|\\\${LIBRARY}|$(ls ${spectral_library})|g" \$CONFIG_COPY
-    sed -i "s|\\\${FASTA}|$(echo ${fasta_files} | awk 'NR==1')|g" \$CONFIG_COPY
-    sed -i "s|\\\${FASTA_CONTAM}|$(echo ${fasta_files} | awk 'NR==2')|g" \$CONFIG_COPY
+    sed -i "s|\\\${LIBRARY}|${spectral_library}|g" \$CONFIG_COPY
+
+    # Use fasta_files directly without subshell commands
+    fasta_file_1=\$(head -n 1 ${fasta_files})
+    fasta_contam_file=\$(tail -n 1 ${fasta_files})
+
+    sed -i "s|\\\${FASTA}|\${fasta_file_1}|g" \$CONFIG_COPY
+    sed -i "s|\\\${FASTA_CONTAM}|\${fasta_contam_file}|g" \$CONFIG_COPY
     sed -i "s|\\\${OUTDIR}|${params.outdir}|g" \$CONFIG_COPY
 
     # Append all RAW files as --f entries
