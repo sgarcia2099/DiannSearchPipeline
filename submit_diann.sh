@@ -18,7 +18,7 @@ mkdir -p \
 # Generate the SBATCH script
 SBATCH_FILE="run_diann.sbatch"
 
-cat > "$SBATCH_FILE" << EOF
+cat > "$SBATCH_FILE" <<EOF
 #!/bin/bash
 #SBATCH -A bsd
 #SBATCH -p burst
