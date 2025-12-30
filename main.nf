@@ -106,7 +106,7 @@ workflow {
     diann_search(
         raw_files.collect(),
         fasta_files,
-        search_config_file
+        search_config_file,
         generated_library
     )
 }
