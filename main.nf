@@ -12,6 +12,9 @@ Channel
 Channel
     .fromPath(params.fasta)
 
+Channel
+    .fromPath(params.fastaContam)
+
 // Generate Spectral Library
 process generate_library {
     
@@ -20,6 +23,7 @@ process generate_library {
 
     input:
         path fasta_files
+        path fasta_contams
 
     output:
         path "*.predicted.speclib" into generated_library
@@ -59,6 +63,7 @@ process diann_search {
     sed -i "s|\\\${RAW_DIR}|.|g" \$CONFIG_COPY
     sed -i "s|\\\${LIBRARY}|\$(ls *.tsv)|g" \$CONFIG_COPY
     sed -i "s|\\\${FASTA}|${params.fasta}|g" \$CONFIG_COPY
+    sed -i "s|\\\${FASTA_CONTAM}|${params.fastaContam}|g" \$CONFIG_COPY
     sed -i "s|\\\${OUTDIR}|${params.outdir}|g" \$CONFIG_COPY
 
     # Append all RAW files as --f entries
