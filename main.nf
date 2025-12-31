@@ -1,50 +1,28 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-// Default DIA-NN version
-params.diann_version = params.diann_version ?: '2.3.1'
-
 // Input channels
-Channel
-    .fromPath("${params.raw_dir}/*.raw", checkIfExists: true)
-    .set { raw_files }
+raw_dir    = Channel.value( file(params.raw_dir) )
+fasta_dir  = Channel.value( file(params.fasta_dir) )
+config_dir = Channel.value( file(params.config_dir) )
 
-// Generate Spectral Library
+// Generate spectral library
 process generate_library {
 
     label 'large'
     publishDir params.outdir, mode: 'copy'
 
     input:
-        path fasta_main
-        path fasta_contam
-        path speclib_config_file
+        path fasta_dir
+        path config_dir
 
     output:
-        path "*.predicted.speclib", emit: generated_library
+        path "result.predicted.speclib", emit: spectral_library
 
     script:
     """
-    echo "===== Generating spectral library ====="
-    echo "FASTA main: ${fasta_main}"
-    echo "FASTA contaminant: ${fasta_contam}"
-
-    CONFIG_COPY="diann_speclib_config_copy.cfg"
-    echo "Using config copy: \$CONFIG_COPY"
-
-    cp ${speclib_config_file} \$CONFIG_COPY
-
-    sed -i "s|\\\${FASTA}|${fasta_main}|g" \$CONFIG_COPY
-    sed -i "s|\\\${FASTA_CONTAM}|${fasta_contam}|g" \$CONFIG_COPY
-    sed -i "s|\\\${OUTDIR}|${params.outdir}|g" \$CONFIG_COPY
-
-    echo "----- CONFIG COPY CONTENTS -----"
-    cat \$CONFIG_COPY
-    echo "--------------------------------"
-
     /diann-${params.diann_version}/diann-linux \
-        --cfg \$CONFIG_COPY \
-        --out ${params.outdir}/library.predicted.speclib
+        --cfg ${config_dir}/*speclib*.cfg
     """
 }
 
@@ -55,10 +33,9 @@ process diann_search {
     publishDir params.outdir, mode: 'copy'
 
     input:
-        path raw_files
-        path fasta_main
-        path fasta_contam
-        path search_config_file
+        path raw_dir
+        path fasta_dir
+        path config_dir
         path spectral_library
 
     output:
@@ -66,53 +43,23 @@ process diann_search {
 
     script:
     """
-    echo "===== Running DIA-NN search ====="
-    echo "Number of RAW files: ${raw_files.size()}"
-    echo "FASTA main: ${fasta_main}"
-    echo "FASTA contaminant: ${fasta_contam}"
-    echo "Spectral library: ${spectral_library}"
-
-    CONFIG_COPY="diann_config_copy.cfg"
-    echo "Using config copy: \$CONFIG_COPY"
-
-    cp ${search_config_file} \$CONFIG_COPY
-
-    sed -i "s|\\\${RAW_DIR}|.|g" \$CONFIG_COPY
-    sed -i "s|\\\${LIBRARY}|${spectral_library}|g" \$CONFIG_COPY
-    sed -i "s|\\\${FASTA}|${fasta_main}|g" \$CONFIG_COPY
-    sed -i "s|\\\${FASTA_CONTAM}|${fasta_contam}|g" \$CONFIG_COPY
-    sed -i "s|\\\${OUTDIR}|${params.outdir}|g" \$CONFIG_COPY
-
-    echo "----- CONFIG COPY CONTENTS -----"
-    cat \$CONFIG_COPY
-    echo "--------------------------------"
-
-    for f in ${raw_files.join(' ')}; do
-        echo "--f \$f" >> \$CONFIG_COPY
-    done
-
     /diann-${params.diann_version}/diann-linux \
-        --cfg \$CONFIG_COPY \
-        --out ${params.outdir}/results.tsv
+        --cfg ${config_dir}/*search*.cfg
     """
 }
 
 // Workflow
 workflow {
-    def search_config_file = file("diann_config.cfg")
-    def speclib_config_file = file("diann_speclib_config.cfg")
 
-    generate_library(
-        fasta_main: file(params.fasta),
-        fasta_contam: file(params.fastaContam),
-        speclib_config_file: speclib_config_file
+    lib = generate_library(
+        fasta_dir,
+        config_dir
     )
 
     diann_search(
-        raw_files.collect(),
-        fasta_main: file(params.fasta),
-        fasta_contam: file(params.fastaContam),
-        search_config_file: search_config_file,
-        spectral_library: generate_library.out.generated_library
+        raw_dir,
+        fasta_dir,
+        config_dir,
+        lib
     )
 }
