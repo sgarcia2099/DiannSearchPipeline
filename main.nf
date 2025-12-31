@@ -29,16 +29,21 @@ process generate_library {
     echo "FASTA: ${fasta_main}"
     echo "CONTAM: ${fasta_contam}"
 
-    CONFIG_COPY="diann_speclib_config_${task.hash}.cfg"
+    CONFIG_COPY="diann_speclib_config_\${SLURM_JOB_ID}.cfg"
+    echo "Config copy will be: \$CONFIG_COPY"
     cp ${speclib_config_file} \$CONFIG_COPY
 
     sed -i "s|\\\${FASTA}|${fasta_main}|g" \$CONFIG_COPY
     sed -i "s|\\\${FASTA_CONTAM}|${fasta_contam}|g" \$CONFIG_COPY
     sed -i "s|\\\${OUTDIR}|${params.outdir}|g" \$CONFIG_COPY
 
+    echo "----- CONFIG COPY CONTENTS -----"
+    cat \$CONFIG_COPY
+    echo "--------------------------------"
+
     /diann-${params.diann_version}/diann-linux \
         --cfg \$CONFIG_COPY \
-        --out ${params.outdir}/library_${task.hash}.predicted.speclib
+        --out ${params.outdir}/library_\${SLURM_JOB_ID}.predicted.speclib
     """
 }
 
@@ -60,10 +65,11 @@ process diann_search {
 
     script:
     """
-    echo "Processing ${raw_files.size()} RAW files"
+    echo "Processing \${#raw_files[@]} RAW files"
     echo "Using spectral library: ${spectral_library}"
 
-    CONFIG_COPY="diann_config_${task.hash}.cfg"
+    CONFIG_COPY="diann_config_\${SLURM_JOB_ID}.cfg"
+    echo "Config copy will be: \$CONFIG_COPY"
     cp ${search_config_file} \$CONFIG_COPY
 
     sed -i "s|\\\${RAW_DIR}|.|g" \$CONFIG_COPY
@@ -72,13 +78,17 @@ process diann_search {
     sed -i "s|\\\${FASTA_CONTAM}|${fasta_contam}|g" \$CONFIG_COPY
     sed -i "s|\\\${OUTDIR}|${params.outdir}|g" \$CONFIG_COPY
 
+    echo "----- CONFIG COPY CONTENTS -----"
+    cat \$CONFIG_COPY
+    echo "--------------------------------"
+
     for f in ${raw_files.join(' ')}; do
         echo "--f \$f" >> \$CONFIG_COPY
     done
 
     /diann-${params.diann_version}/diann-linux \
         --cfg \$CONFIG_COPY \
-        --out ${params.outdir}/results_${task.hash}.tsv
+        --out ${params.outdir}/results_\${SLURM_JOB_ID}.tsv
     """
 }
 
