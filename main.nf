@@ -32,8 +32,8 @@ process generate_library {
     echo "FASTA: ${fasta_files[0]}"
     echo "CONTAM: ${fasta_files[1]}"
 
-    CONFIG_COPY="diann_speclib_config_${SLURM_JOB_ID}.cfg"
-    echo "CONFIG_COPY = $CONFIG_COPY"
+    CONFIG_COPY="diann_speclib_config_\${SLURM_JOB_ID}.cfg"
+    echo "CONFIG_COPY = \$CONFIG_COPY"
     cp ${speclib_config_file} \$CONFIG_COPY
 
     # Replace placeholders with FULL PATHS
@@ -43,7 +43,7 @@ process generate_library {
 
     /diann-2.3.1/diann-linux \
         --cfg \$CONFIG_COPY \
-        --out ${params.outdir}/library_${SLURM_JOB_ID}.predicted.speclib
+        --out ${params.outdir}/library_\${SLURM_JOB_ID}.predicted.speclib
     """
 
 }
@@ -68,7 +68,7 @@ process diann_search {
     echo "Found \$(ls *.raw | wc -l) RAW files"
     echo "Using spectral library: ${spectral_library}"
 
-    CONFIG_COPY="diann_config_${SLURM_JOB_ID}.cfg"
+    CONFIG_COPY="diann_config_\${SLURM_JOB_ID}.cfg"
     cp ${search_config_file} \$CONFIG_COPY
 
     sed -i "s|\\\${RAW_DIR}|.|g" \$CONFIG_COPY
