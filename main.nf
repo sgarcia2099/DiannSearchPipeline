@@ -29,17 +29,20 @@ process generate_library {
     script:
     """
     echo "Generating spectral library..."
+    echo "FASTA: ${fasta_files[0]}"
+    echo "CONTAM: ${fasta_files[1]}"
 
     CONFIG_COPY="diann_speclib_config_${SLURM_JOB_ID}.cfg"
     cp ${speclib_config_file} \$CONFIG_COPY
 
-    # Replace placeholders in the spectral library config file
-    sed -i "s|\\\${FASTA}|${fasta_files[0]}|g" \$CONFIG_COPY
-    sed -i "s|\\\${FASTA_CONTAM}|${fasta_files[1]}|g" \$CONFIG_COPY
+    # Replace placeholders with FULL PATHS
+    sed -i "s|\\\${FASTA}|${fasta_files[0].toString()}|g" \$CONFIG_COPY
+    sed -i "s|\\\${FASTA_CONTAM}|${fasta_files[1].toString()}|g" \$CONFIG_COPY
     sed -i "s|\\\${OUTDIR}|${params.outdir}|g" \$CONFIG_COPY
 
-    # Run DIA-NN to generate the spectral library
-    /diann-2.3.1/diann-linux --cfg \$CONFIG_COPY --out ${params.outdir}/library_${SLURM_JOB_ID}.predicted.speclib
+    /diann-2.3.1/diann-linux \
+        --cfg \$CONFIG_COPY \
+        --out ${params.outdir}/library_${SLURM_JOB_ID}.predicted.speclib
     """
 
 }
@@ -69,8 +72,8 @@ process diann_search {
 
     sed -i "s|\\\${RAW_DIR}|.|g" \$CONFIG_COPY
     sed -i "s|\\\${LIBRARY}|${spectral_library}|g" \$CONFIG_COPY
-    sed -i "s|\\\${FASTA}|${fasta_files[0]}|g" \$CONFIG_COPY
-    sed -i "s|\\\${FASTA_CONTAM}|${fasta_files[1]}|g" \$CONFIG_COPY
+    sed -i "s|\\\${FASTA}|${fasta_files[0].toString()}|g" \$CONFIG_COPY
+    sed -i "s|\\\${FASTA_CONTAM}|${fasta_files[1].toString()}|g" \$CONFIG_COPY
     sed -i "s|\\\${OUTDIR}|${params.outdir}|g" \$CONFIG_COPY
 
     for f in *.raw; do
