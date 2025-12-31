@@ -9,10 +9,6 @@ Channel
     .fromPath("${params.raw_dir}/*.raw", checkIfExists: true)
     .set { raw_files }
 
-Channel
-    .of(file(params.fasta), file(params.fastaContam))
-    .set { fasta_files }
-
 // Generate Spectral Library
 process generate_library {
 
@@ -20,7 +16,8 @@ process generate_library {
     publishDir params.outdir, mode: 'copy'
 
     input:
-        path fasta_files
+        path fasta_main
+        path fasta_contam
         path speclib_config_file
 
     output:
@@ -28,16 +25,17 @@ process generate_library {
 
     script:
     """
-    echo "Generating spectral library..."
-    echo "FASTA: ${fasta_files[0]}"
-    echo "CONTAM: ${fasta_files[1]}"
+    echo "===== Generating spectral library ====="
+    echo "FASTA main: ${fasta_main}"
+    echo "FASTA contaminant: ${fasta_contam}"
 
     CONFIG_COPY="diann_speclib_config_copy.cfg"
     echo "Using config copy: \$CONFIG_COPY"
+
     cp ${speclib_config_file} \$CONFIG_COPY
 
-    sed -i "s|\\\${FASTA}|${fasta_files[0]}|g" \$CONFIG_COPY
-    sed -i "s|\\\${FASTA_CONTAM}|${fasta_files[1]}|g" \$CONFIG_COPY
+    sed -i "s|\\\${FASTA}|${fasta_main}|g" \$CONFIG_COPY
+    sed -i "s|\\\${FASTA_CONTAM}|${fasta_contam}|g" \$CONFIG_COPY
     sed -i "s|\\\${OUTDIR}|${params.outdir}|g" \$CONFIG_COPY
 
     echo "----- CONFIG COPY CONTENTS -----"
@@ -58,7 +56,8 @@ process diann_search {
 
     input:
         path raw_files
-        path fasta_files
+        path fasta_main
+        path fasta_contam
         path search_config_file
         path spectral_library
 
@@ -67,17 +66,21 @@ process diann_search {
 
     script:
     """
-    echo "Processing \${#raw_files[@]} RAW files"
-    echo "Using spectral library: ${spectral_library}"
+    echo "===== Running DIA-NN search ====="
+    echo "Number of RAW files: ${raw_files.size()}"
+    echo "FASTA main: ${fasta_main}"
+    echo "FASTA contaminant: ${fasta_contam}"
+    echo "Spectral library: ${spectral_library}"
 
     CONFIG_COPY="diann_config_copy.cfg"
     echo "Using config copy: \$CONFIG_COPY"
+
     cp ${search_config_file} \$CONFIG_COPY
 
     sed -i "s|\\\${RAW_DIR}|.|g" \$CONFIG_COPY
     sed -i "s|\\\${LIBRARY}|${spectral_library}|g" \$CONFIG_COPY
-    sed -i "s|\\\${FASTA}|${fasta_files[0]}|g" \$CONFIG_COPY
-    sed -i "s|\\\${FASTA_CONTAM}|${fasta_files[1]}|g" \$CONFIG_COPY
+    sed -i "s|\\\${FASTA}|${fasta_main}|g" \$CONFIG_COPY
+    sed -i "s|\\\${FASTA_CONTAM}|${fasta_contam}|g" \$CONFIG_COPY
     sed -i "s|\\\${OUTDIR}|${params.outdir}|g" \$CONFIG_COPY
 
     echo "----- CONFIG COPY CONTENTS -----"
@@ -94,21 +97,22 @@ process diann_search {
     """
 }
 
-
 // Workflow
 workflow {
     def search_config_file = file("diann_config.cfg")
     def speclib_config_file = file("diann_speclib_config.cfg")
 
     generate_library(
-        fasta_files,
-        speclib_config_file
+        fasta_main: file(params.fasta),
+        fasta_contam: file(params.fastaContam),
+        speclib_config_file: speclib_config_file
     )
 
     diann_search(
         raw_files.collect(),
-        fasta_files,
-        search_config_file,
-        generate_library.out.generated_library
+        fasta_main: file(params.fasta),
+        fasta_contam: file(params.fastaContam),
+        search_config_file: search_config_file,
+        spectral_library: generate_library.out.generated_library
     )
 }
