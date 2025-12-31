@@ -33,6 +33,7 @@ process generate_library {
     echo "CONTAM: ${fasta_files[1]}"
 
     CONFIG_COPY="diann_speclib_config_${SLURM_JOB_ID}.cfg"
+    echo "CONFIG_COPY = $CONFIG_COPY"
     cp ${speclib_config_file} \$CONFIG_COPY
 
     # Replace placeholders with FULL PATHS
