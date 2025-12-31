@@ -22,7 +22,7 @@ process generate_library {
     script:
     """
     /diann-${params.diann_version}/diann-linux \
-        --cfg ${config_dir}/*speclib*.cfg
+        --cfg ${config_dir}/diann_speclib_config.cfg
     """
 }
 
@@ -44,7 +44,7 @@ process diann_search {
     script:
     """
     /diann-${params.diann_version}/diann-linux \
-        --cfg ${config_dir}/*search*.cfg
+        --cfg ${config_dir}/diann_search_config.cfg
     """
 }
 
