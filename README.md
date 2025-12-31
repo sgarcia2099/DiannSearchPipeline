@@ -1,25 +1,25 @@
 # DiannSearchPipeline
 
-A scalable Nextflow workflow that converts Thermo `.raw` files into `.mzML` files using **ThermoRawFileParser** inside an **Apptainer/Singularity** container. Designed for cloud/HPC environments using **Slurm**.
+Pipeline for searching Thermo `.raw` files using [DIA-NN](https://github.com/vdemichev/DiaNN).
 
----
-
-## Features
-- Parallel conversion of `.raw` files to `.mzML`
-- Work directories default to `/lustre/or-scratch/cades-bsd/$USER`
+- Directories default to `/lustre/or-scratch/cades-bsd/$USER`
+- Pipeline built using Nextflow and SLURM job handling
+- Pipeline was constructed using DIA-NN 2.3.1 - Academia for Linux
 
 ---
 
 ### Running the Pipeline
 
-1. Place `.raw` files in `/lustre/or-scratch/cades-bsd/$USER/rawfiles`:
+1. Place `.raw` files in `/lustre/or-scratch/cades-bsd/$USER/rawfiles`
+2. Place `.fasta` files in `/lustre/or-scratch/cades-bsd/$USER/fasta`
+3. Place `.cfg` files (for DIA-NN) in `/lustre/or-scratch/cades-bsd/$USER/configs`
 
-2. Run the pipeline:
+4. Run the pipeline:
    ```bash
-   ./submit_diann.sh
+   ./submit_diann.sh <diann-version>
    ```
 
-3. Outputs are written to:
+5. Outputs are written to:
    ```
    /lustre/or-scratch/cades-bsd/$USER/results/
    ```
@@ -28,5 +28,4 @@ A scalable Nextflow workflow that converts Thermo `.raw` files into `.mzML` file
 
 ### Containers
 
-**ThermoRawFileParser**: [biocontainers/thermorawfileparser/tags](https://quay.io/repository/biocontainers/thermorawfileparser?tab=tags). \
 **Dia-NN**: [garciasarah2099/diannpipeline](https://hub.docker.com/r/garciasarah2099/diannpipeline)
