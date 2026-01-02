@@ -10,7 +10,6 @@ config_dir = Channel.value( file(params.config_dir) )
 process generate_library {
 
     label 'large'
-    publishDir params.outdir, mode: 'copy'
 
     input:
         path fasta_dir
@@ -30,7 +29,6 @@ process generate_library {
 process diann_search {
 
     label 'large'
-    publishDir params.outdir, mode: 'copy'
 
     input:
         path raw_dir
