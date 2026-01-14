@@ -12,13 +12,13 @@ DIANN_VERSION="$1"
 BASE="/lustre/or-scratch/cades-bsd/$USER"
 
 # Directories to use
-export SINGULARITY_TMPDIR="$BASE/tmp"
-export SINGULARITY_CACHEDIR="$BASE/cache"
-export SINGULARITY_BINDPATH="$BASE"
+export APPTAINER_TMPDIR="$BASE/tmp"
+export APPTAINER_CACHEDIR="$BASE/cache"
+export APPTAINER_BINDPATH="$BASE"
 
 mkdir -p \
-  "$SINGULARITY_TMPDIR" \
-  "$SINGULARITY_CACHEDIR" \
+  "$APPTAINER_TMPDIR" \
+  "$APPTAINER_CACHEDIR" \
   logs \
   "$BASE/results"
 
