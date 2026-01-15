@@ -34,8 +34,8 @@ SBATCH_FILE="run_diann.sbatch"
 cat > "$SBATCH_FILE" <<EOF
 #!/bin/bash
 #SBATCH -A bsd
-#SBATCH -p batch
-#SBATCH --qos=bsd-batch
+#SBATCH -p burst
+#SBATCH --qos=default
 #SBATCH -t 1-00:00:00
 #SBATCH --nodes=1
 #SBATCH -c 32
