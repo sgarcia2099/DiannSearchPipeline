@@ -43,7 +43,6 @@ cat > "$SBATCH_FILE" <<EOF
 #SBATCH -J diann_nf
 #SBATCH --output=logs/nf_%j.out
 #SBATCH --error=logs/nf_%j.err
-#SBATCH --requeue
 
 set -euxo pipefail
 
