@@ -48,7 +48,7 @@ set -euxo pipefail
 
 # Run Nextflow
 nextflow run main.nf \
-    -work-dir "$BASE/work \
+    -work-dir "$BASE/work" \
     --raw_dir "$BASE/rawfiles" \
     --outdir "$BASE/results" \
     --diann_version "$DIANN_VERSION" \
