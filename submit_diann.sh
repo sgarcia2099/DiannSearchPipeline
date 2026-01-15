@@ -39,10 +39,11 @@ cat > "$SBATCH_FILE" <<EOF
 #SBATCH -t 1-00:00:00
 #SBATCH --nodes=1
 #SBATCH -c 32
-#SBATCH --mem=128g
+#SBATCH --mem=125g
 #SBATCH -J diann_nf
 #SBATCH --output=logs/nf_%j.out
 #SBATCH --error=logs/nf_%j.err
+#SBATCH --requeue
 
 set -euxo pipefail
 
