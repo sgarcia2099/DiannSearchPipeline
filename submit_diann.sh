@@ -21,7 +21,6 @@ mkdir -p \
   "$APPTAINER_CACHEDIR" \
   logs \
   "$BASE/results" \
-  "$BASE/work"
 
 # Sanity check for RAW files
 if [ ! -d "$BASE/rawfiles" ] || [ -z "$(ls -A "$BASE/rawfiles" 2>/dev/null)" ]; then
@@ -49,7 +48,6 @@ set -euxo pipefail
 
 # Run Nextflow
 nextflow run main.nf \
-    -work-dir "$BASE/work" \
     --raw_dir "$BASE/rawfiles" \
     --outdir "$BASE/results" \
     --diann_version "$DIANN_VERSION" \
