@@ -20,7 +20,8 @@ mkdir -p \
   "$APPTAINER_TMPDIR" \
   "$APPTAINER_CACHEDIR" \
   logs \
-  "$BASE/results"
+  "$BASE/results" \
+  "$BASE/work"
 
 # Sanity check for RAW files
 if [ ! -d "$BASE/rawfiles" ] || [ -z "$(ls -A "$BASE/rawfiles" 2>/dev/null)" ]; then
