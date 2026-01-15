@@ -35,6 +35,7 @@ cat > "$SBATCH_FILE" <<EOF
 #!/bin/bash
 #SBATCH -A bsd
 #SBATCH -p burst
+#SBATCH --constraint=high_mem_cd
 #SBATCH --qos=default
 #SBATCH -t 1-00:00:00
 #SBATCH --nodes=1
