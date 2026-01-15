@@ -46,7 +46,6 @@ process diann_search {
     mkdir -p results
 
     /diann-${params.diann_version}/diann-linux \
-        --dir ${raw_dir} \
         --cfg ${config_dir}/diann_search_config.cfg
     """
 }
