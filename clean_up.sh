@@ -11,6 +11,8 @@ if [ -d "work" ];    then rm -r work; fi
 
 if [ -d "stash" ];   then rm -r stash; fi
 if [ -d "cache" ];   then rm -r cache; fi
-if [ -d "tmp" ];   then rm -r tmp; fi
+if [ -d "tmp" ];     then rm -r tmp; fi
+
+if [ -d "configs" ]; then rm -r configs; fi
 
 echo "\n Reset! \n"
