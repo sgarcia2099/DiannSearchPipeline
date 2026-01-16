@@ -15,4 +15,9 @@ if [ -d "tmp" ];     then rm -r tmp; fi
 
 if [ -d "configs" ]; then rm -r configs; fi
 
-echo "\n Reset! \n"
+echo "Reset!"
+echo "Now copying configs from repo..."
+
+cp -r $HOME/DiannSearchPipeline/configs ./configs
+
+echo "Done!"
