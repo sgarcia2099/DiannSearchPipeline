@@ -16,7 +16,7 @@ process generate_library {
         path config_dir
 
     output:
-        path "results/report-lib.predicted.speclib", emit: spectral_library
+        path "report-lib.predicted.speclib", emit: spectral_library
 
     script:
     """
