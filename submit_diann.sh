@@ -27,10 +27,13 @@ mkdir -p \
   "$APPTAINER_TMPDIR" \
   "$APPTAINER_CACHEDIR"
 
+# Create job-specific directories first (logs must exist for SBATCH output)
+mkdir -p "$JOB_DIR/logs" "$JOB_DIR/results" "$JOB_DIR/work"
+
 # Generate prep script for container pull and file copying
 PREP_SCRIPT="$JOB_DIR/prepare_job.sbatch"
 
-cat > "$PREP_SCRIPT" <<'PREP_EOF'
+cat > "$PREP_SCRIPT" <<EOF
 #!/bin/bash
 #SBATCH -A bsd
 #SBATCH -p burst
@@ -39,69 +42,61 @@ cat > "$PREP_SCRIPT" <<'PREP_EOF'
 #SBATCH --nodes=1
 #SBATCH -c 1
 #SBATCH --mem=8g
-#SBATCH -J diann_prep_TIMESTAMP
-#SBATCH --output=JOB_DIR/logs/prep_%j.out
-#SBATCH --error=JOB_DIR/logs/nf_%j.err
+#SBATCH -J diann_prep_${TIMESTAMP}
+#SBATCH --output=${JOB_DIR}/logs/prep_%j.out
+#SBATCH --error=${JOB_DIR}/logs/prep_%j.err
 
 set -euxo pipefail
 
-BASE="/lustre/or-scratch/cades-bsd/$USER"
-REPO_DIR="$HOME/github/DiannSearchPipeline"
-JOB_DIR="JOB_DIR_VALUE"
-DIANN_VERSION="DIANN_VERSION_VALUE"
+BASE="/lustre/or-scratch/cades-bsd/\$USER"
+REPO_DIR="\$HOME/github/DiannSearchPipeline"
+JOB_DIR="${JOB_DIR}"
+DIANN_VERSION="${DIANN_VERSION}"
 
-export APPTAINER_TMPDIR="$BASE/tmp"
-export APPTAINER_CACHEDIR="$BASE/cache"
+export APPTAINER_TMPDIR="\$BASE/tmp"
+export APPTAINER_CACHEDIR="\$BASE/cache"
 
 # Pull or verify container exists
-CONTAINER_SIF="$APPTAINER_CACHEDIR/diannpipeline_${DIANN_VERSION}.sif"
-if [ ! -f "$CONTAINER_SIF" ]; then
-    echo "Pulling container: docker://garciasarah2099/diannpipeline:${DIANN_VERSION}"
-    apptainer pull "$CONTAINER_SIF" "docker://garciasarah2099/diannpipeline:${DIANN_VERSION}"
-    echo "Container stored: $CONTAINER_SIF"
+CONTAINER_SIF="\$APPTAINER_CACHEDIR/diannpipeline_\${DIANN_VERSION}.sif"
+if [ ! -f "\$CONTAINER_SIF" ]; then
+    echo "Pulling container: docker://garciasarah2099/diannpipeline:\${DIANN_VERSION}"
+    apptainer pull "\$CONTAINER_SIF" "docker://garciasarah2099/diannpipeline:\${DIANN_VERSION}"
+    echo "Container stored: \$CONTAINER_SIF"
 else
-    echo "Using existing container: $CONTAINER_SIF"
+    echo "Using existing container: \$CONTAINER_SIF"
 fi
 
 # Sanity check for RAW files in staging area
-if [ ! -d "$BASE/rawfiles" ] || [ -z "$(ls -A "$BASE/rawfiles" 2>/dev/null)" ]; then
-    echo "Error: No .raw files found in $BASE/rawfiles."
+if [ ! -d "\$BASE/rawfiles" ] || [ -z "\$(ls -A "\$BASE/rawfiles" 2>/dev/null)" ]; then
+    echo "Error: No .raw files found in \$BASE/rawfiles."
     exit 1
 fi
 
 # Copy all needed files into job directory (self-contained)
 echo "Copying files into job directory..."
-cp -r --no-dereference "$BASE/rawfiles" "$JOB_DIR/rawfiles"
-cp -r --no-dereference "$BASE/fasta" "$JOB_DIR/fasta"
-cp -r --no-dereference "$BASE/configs" "$JOB_DIR/configs"
-cp "$REPO_DIR/main.nf" "$JOB_DIR/"
-cp "$REPO_DIR/nextflow.config" "$JOB_DIR/"
+cp -r --no-dereference "\$BASE/rawfiles" "${JOB_DIR}/rawfiles"
+cp -r --no-dereference "\$BASE/fasta" "${JOB_DIR}/fasta"
+cp -r --no-dereference "\$BASE/configs" "${JOB_DIR}/configs"
+cp "\$REPO_DIR/main.nf" "${JOB_DIR}/"
+cp "\$REPO_DIR/nextflow.config" "${JOB_DIR}/"
 
 # Verify files copied successfully
 echo "Verifying files copied successfully..."
-if [ ! -d "$JOB_DIR/rawfiles" ] || [ -z "$(ls -A "$JOB_DIR/rawfiles" 2>/dev/null)" ]; then
+if [ ! -d "${JOB_DIR}/rawfiles" ] || [ -z "\$(ls -A "${JOB_DIR}/rawfiles" 2>/dev/null)" ]; then
     echo "Error: Failed to copy rawfiles to job directory"
     exit 1
 fi
-if [ ! -d "$JOB_DIR/fasta" ] || [ -z "$(ls -A "$JOB_DIR/fasta" 2>/dev/null)" ]; then
+if [ ! -d "${JOB_DIR}/fasta" ] || [ -z "\$(ls -A "${JOB_DIR}/fasta" 2>/dev/null)" ]; then
     echo "Error: Failed to copy fasta to job directory"
     exit 1
 fi
-if [ ! -d "$JOB_DIR/configs" ] || [ -z "$(ls -A "$JOB_DIR/configs" 2>/dev/null)" ]; then
+if [ ! -d "${JOB_DIR}/configs" ] || [ -z "\$(ls -A "${JOB_DIR}/configs" 2>/dev/null)" ]; then
     echo "Error: Failed to copy configs to job directory"
     exit 1
 fi
 
 echo "Prep job complete: files staged and container ready"
-PREP_EOF
-
-# Replace placeholders in prep script
-sed -i "s|TIMESTAMP|${TIMESTAMP}|g" "$PREP_SCRIPT"
-sed -i "s|JOB_DIR_VALUE|${JOB_DIR}|g" "$PREP_SCRIPT"
-sed -i "s|DIANN_VERSION_VALUE|${DIANN_VERSION}|g" "$PREP_SCRIPT"
-
-# Create job-specific directories
-mkdir -p "$JOB_DIR/logs" "$JOB_DIR/results" "$JOB_DIR/work"
+EOF
 
 echo "Submitting prep job for container pull and file staging..."
 PREP_JOB_ID=$(sbatch --parsable "$PREP_SCRIPT")
@@ -123,7 +118,7 @@ cat > "$SBATCH_FILE" <<EOF
 #SBATCH -J diann_${TIMESTAMP}
 #SBATCH --output=$JOB_DIR/logs/nf_%j.out
 #SBATCH --error=$JOB_DIR/logs/nf_%j.err
-#SBATCH --dependency=afterok:${PREP_JOB_ID}
+#SBATCH --dependency=afterany:${PREP_JOB_ID}
 
 set -euxo pipefail
 
@@ -153,7 +148,11 @@ EOF
 # Submit the main SBATCH script (will wait for prep job to complete)
 echo "Submitting main Nextflow job (will wait for prep job to complete)..."
 echo "Nextflow job file: $SBATCH_FILE"
-MAIN_JOB_ID=$(sbatch --parsable "$SBATCH_FILE")
+
+# Use afterany instead of afterok to handle any prep job state
+# This ensures main job runs once prep job finishes, even if prep has non-zero exit
+# The prep script includes validation, so failures will be caught there
+MAIN_JOB_ID=$(sbatch --parsable --dependency=afterany:${PREP_JOB_ID} "$SBATCH_FILE")
 echo "Nextflow job submitted with ID: $MAIN_JOB_ID (depends on prep job $PREP_JOB_ID)"
 
 echo ""
