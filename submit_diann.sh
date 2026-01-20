@@ -12,6 +12,17 @@ DIANN_VERSION="$1"
 BASE="/lustre/or-scratch/cades-bsd/$USER"
 REPO_DIR="$HOME/github/DiannSearchPipeline"
 
+# Fixed container path
+CONTAINER_SIF="/lustre/or-scratch/cades-bsd/jkg/cache/diann_container.sif"
+
+# Verify container exists before proceeding
+if [ ! -f "$CONTAINER_SIF" ]; then
+    echo "Error: Container not found at $CONTAINER_SIF"
+    echo "Please ensure diann_container.sif exists in /lustre/or-scratch/cades-bsd/jkg/cache/"
+    exit 1
+fi
+echo "Using container: $CONTAINER_SIF"
+
 # Create timestamp for unique job directory
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 JOB_DIR="$BASE/diann_job_${TIMESTAMP}"
@@ -19,18 +30,7 @@ JOB_DIR="$BASE/diann_job_${TIMESTAMP}"
 echo "Creating job directory: $JOB_DIR"
 mkdir -p "$JOB_DIR"
 
-# Set up Apptainer directories
-export APPTAINER_TMPDIR="$BASE/tmp"
-export APPTAINER_CACHEDIR="$BASE/cache"
-
-mkdir -p \
-  "$APPTAINER_TMPDIR" \
-  "$APPTAINER_CACHEDIR"
-
-# Create job-specific directories first (logs must exist for SBATCH output)
-mkdir -p "$JOB_DIR/logs" "$JOB_DIR/results" "$JOB_DIR/work"
-
-# Generate prep script for container pull and file copying
+# Set up Apptainer directorfile copying
 PREP_SCRIPT="$JOB_DIR/prepare_job.sbatch"
 
 cat > "$PREP_SCRIPT" <<EOF
@@ -50,10 +50,7 @@ set -euxo pipefail
 
 BASE="/lustre/or-scratch/cades-bsd/\$USER"
 REPO_DIR="\$HOME/github/DiannSearchPipeline"
-JOB_DIR="${JOB_DIR}"
-DIANN_VERSION="${DIANN_VERSION}"
-
-export APPTAINER_TMPDIR="\$BASE/tmp"
+JOB_DIR="${JOB_DIR}"port APPTAINER_TMPDIR="\$BASE/tmp"
 export APPTAINER_CACHEDIR="\$BASE/cache"
 
 # Pull or verify container exists
@@ -130,7 +127,7 @@ export APPTAINER_TMPDIR="$APPTAINER_TMPDIR"
 export APPTAINER_CACHEDIR="$APPTAINER_CACHEDIR"
 export APPTAINER_BINDPATH="$JOB_DIR:$JOB_DIR"
 
-CONTAINER_SIF="$APPTAINER_CACHEDIR/diannpipeline_${DIANN_VERSION}.sif"
+CONTAINER_SIF="/lustre/or-scratch/cades-bsd/jkg/cache/diann_container.sif"
 
 # Run Nextflow with absolute job-specific paths
 # All input files are now isolated in JOB_DIR and won't be affected by changes to staging areas
