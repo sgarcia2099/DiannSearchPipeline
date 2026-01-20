@@ -30,7 +30,18 @@ JOB_DIR="$BASE/diann_job_${TIMESTAMP}"
 echo "Creating job directory: $JOB_DIR"
 mkdir -p "$JOB_DIR"
 
-# Set up Apptainer directorfile copying
+# Set up Apptainer directories
+export APPTAINER_TMPDIR="$BASE/tmp"
+export APPTAINER_CACHEDIR="$BASE/cache"
+
+mkdir -p \
+  "$APPTAINER_TMPDIR" \
+  "$APPTAINER_CACHEDIR"
+
+# Create job-specific directories first (logs must exist for SBATCH output)
+mkdir -p "$JOB_DIR/logs" "$JOB_DIR/results" "$JOB_DIR/work"
+
+# Generate prep script for file copying
 PREP_SCRIPT="$JOB_DIR/prepare_job.sbatch"
 
 cat > "$PREP_SCRIPT" <<EOF
@@ -50,18 +61,7 @@ set -euxo pipefail
 
 BASE="/lustre/or-scratch/cades-bsd/\$USER"
 REPO_DIR="\$HOME/github/DiannSearchPipeline"
-JOB_DIR="${JOB_DIR}"port APPTAINER_TMPDIR="\$BASE/tmp"
-export APPTAINER_CACHEDIR="\$BASE/cache"
-
-# Pull or verify container exists
-CONTAINER_SIF="\$APPTAINER_CACHEDIR/diannpipeline_\${DIANN_VERSION}.sif"
-if [ ! -f "\$CONTAINER_SIF" ]; then
-    echo "Pulling container: docker://garciasarah2099/diannpipeline:\${DIANN_VERSION}"
-    apptainer pull "\$CONTAINER_SIF" "docker://garciasarah2099/diannpipeline:\${DIANN_VERSION}"
-    echo "Container stored: \$CONTAINER_SIF"
-else
-    echo "Using existing container: \$CONTAINER_SIF"
-fi
+JOB_DIR="${JOB_DIR}"
 
 # Sanity check for RAW files in staging area
 if [ ! -d "\$BASE/rawfiles" ] || [ -z "\$(ls -A "\$BASE/rawfiles" 2>/dev/null)" ]; then
@@ -92,10 +92,10 @@ if [ ! -d "${JOB_DIR}/configs" ] || [ -z "\$(ls -A "${JOB_DIR}/configs" 2>/dev/n
     exit 1
 fi
 
-echo "Prep job complete: files staged and container ready"
+echo "Prep job complete: files staged"
 EOF
 
-echo "Submitting prep job for container pull and file staging..."
+echo "Submitting prep job for file staging..."
 PREP_JOB_ID=$(sbatch --parsable "$PREP_SCRIPT")
 echo "Prep job submitted with ID: $PREP_JOB_ID"
 
