@@ -60,7 +60,7 @@ cat > "$PREP_SCRIPT" <<EOF
 set -euxo pipefail
 
 BASE="/lustre/or-scratch/cades-bsd/\$USER"
-REPO_DIR="\$HOME/github/DiannSearchPipeline"
+REPO_DIR="$HOME/DiannSearchPipeline"
 JOB_DIR="${JOB_DIR}"
 
 # Sanity check for RAW files in staging area
