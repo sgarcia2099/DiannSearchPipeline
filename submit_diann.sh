@@ -123,8 +123,8 @@ set -euxo pipefail
 cd "$JOB_DIR"
 
 # Set Apptainer environment - use absolute job directory paths for complete isolation
-export APPTAINER_TMPDIR="$APPTAINER_TMPDIR"
-export APPTAINER_CACHEDIR="$APPTAINER_CACHEDIR"
+export APPTAINER_TMPDIR="/lustre/or-scratch/cades-bsd/jkg/tmp"
+export APPTAINER_CACHEDIR="/lustre/or-scratch/cades-bsd/jkg/cache"
 export APPTAINER_BINDPATH="$JOB_DIR:$JOB_DIR"
 
 CONTAINER_SIF="/lustre/or-scratch/cades-bsd/jkg/cache/diann_container.sif"
