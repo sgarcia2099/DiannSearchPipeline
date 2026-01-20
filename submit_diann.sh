@@ -19,36 +19,57 @@ JOB_DIR="$BASE/diann_job_${TIMESTAMP}"
 echo "Creating job directory: $JOB_DIR"
 mkdir -p "$JOB_DIR"
 
-# Global Apptainer directories (shared across all jobs)
-# Note: Only bind the job directory, not the entire BASE to prevent cross-job interference
+# Set up Apptainer directories
 export APPTAINER_TMPDIR="$BASE/tmp"
 export APPTAINER_CACHEDIR="$BASE/cache"
-export APPTAINER_BINDPATH="$JOB_DIR:$JOB_DIR"
 
 mkdir -p \
   "$APPTAINER_TMPDIR" \
   "$APPTAINER_CACHEDIR"
 
-# Pull or verify container exists (pull once, reuse forever)
+# Generate prep script for container pull and file copying
+PREP_SCRIPT="$JOB_DIR/prepare_job.sbatch"
+
+cat > "$PREP_SCRIPT" <<'PREP_EOF'
+#!/bin/bash
+#SBATCH -A bsd
+#SBATCH -p burst
+#SBATCH --qos=default
+#SBATCH -t 1:00:00
+#SBATCH --nodes=1
+#SBATCH -c 1
+#SBATCH --mem=8g
+#SBATCH -J diann_prep_TIMESTAMP
+#SBATCH --output=JOB_DIR/logs/prep_%j.out
+#SBATCH --error=JOB_DIR/logs/nf_%j.err
+
+set -euxo pipefail
+
+BASE="/lustre/or-scratch/cades-bsd/$USER"
+REPO_DIR="$HOME/github/DiannSearchPipeline"
+JOB_DIR="JOB_DIR_VALUE"
+DIANN_VERSION="DIANN_VERSION_VALUE"
+
+export APPTAINER_TMPDIR="$BASE/tmp"
+export APPTAINER_CACHEDIR="$BASE/cache"
+
+# Pull or verify container exists
 CONTAINER_SIF="$APPTAINER_CACHEDIR/diannpipeline_${DIANN_VERSION}.sif"
 if [ ! -f "$CONTAINER_SIF" ]; then
-    echo "Container not found. Pulling: docker://garciasarah2099/diannpipeline:${DIANN_VERSION}"
+    echo "Pulling container: docker://garciasarah2099/diannpipeline:${DIANN_VERSION}"
     apptainer pull "$CONTAINER_SIF" "docker://garciasarah2099/diannpipeline:${DIANN_VERSION}"
     echo "Container stored: $CONTAINER_SIF"
 else
     echo "Using existing container: $CONTAINER_SIF"
 fi
-echo ""
 
 # Sanity check for RAW files in staging area
 if [ ! -d "$BASE/rawfiles" ] || [ -z "$(ls -A "$BASE/rawfiles" 2>/dev/null)" ]; then
     echo "Error: No .raw files found in $BASE/rawfiles."
-    echo "Please place raw files in $BASE/rawfiles before submitting."
     exit 1
 fi
 
 # Copy all needed files into job directory (self-contained)
-# Use absolute paths and deep copy to ensure complete isolation from staging area
 echo "Copying files into job directory..."
 cp -r --no-dereference "$BASE/rawfiles" "$JOB_DIR/rawfiles"
 cp -r --no-dereference "$BASE/fasta" "$JOB_DIR/fasta"
@@ -56,6 +77,7 @@ cp -r --no-dereference "$BASE/configs" "$JOB_DIR/configs"
 cp "$REPO_DIR/main.nf" "$JOB_DIR/"
 cp "$REPO_DIR/nextflow.config" "$JOB_DIR/"
 
+# Verify files copied successfully
 echo "Verifying files copied successfully..."
 if [ ! -d "$JOB_DIR/rawfiles" ] || [ -z "$(ls -A "$JOB_DIR/rawfiles" 2>/dev/null)" ]; then
     echo "Error: Failed to copy rawfiles to job directory"
@@ -70,13 +92,22 @@ if [ ! -d "$JOB_DIR/configs" ] || [ -z "$(ls -A "$JOB_DIR/configs" 2>/dev/null)"
     exit 1
 fi
 
+echo "Prep job complete: files staged and container ready"
+PREP_EOF
+
+# Replace placeholders in prep script
+sed -i "s|TIMESTAMP|${TIMESTAMP}|g" "$PREP_SCRIPT"
+sed -i "s|JOB_DIR_VALUE|${JOB_DIR}|g" "$PREP_SCRIPT"
+sed -i "s|DIANN_VERSION_VALUE|${DIANN_VERSION}|g" "$PREP_SCRIPT"
+
 # Create job-specific directories
 mkdir -p "$JOB_DIR/logs" "$JOB_DIR/results" "$JOB_DIR/work"
 
-echo "Job directory setup complete: $JOB_DIR"
-echo ""
+echo "Submitting prep job for container pull and file staging..."
+PREP_JOB_ID=$(sbatch --parsable "$PREP_SCRIPT")
+echo "Prep job submitted with ID: $PREP_JOB_ID"
 
-# Generate the SBATCH script
+# Generate the main Nextflow SBATCH script
 SBATCH_FILE="$JOB_DIR/run_diann.sbatch"
 
 cat > "$SBATCH_FILE" <<EOF
@@ -92,34 +123,42 @@ cat > "$SBATCH_FILE" <<EOF
 #SBATCH -J diann_${TIMESTAMP}
 #SBATCH --output=$JOB_DIR/logs/nf_%j.out
 #SBATCH --error=$JOB_DIR/logs/nf_%j.err
+#SBATCH --dependency=afterok:${PREP_JOB_ID}
 
 set -euxo pipefail
 
 # Change to job directory
 cd "$JOB_DIR"
+
 # Set Apptainer environment - use absolute job directory paths for complete isolation
 export APPTAINER_TMPDIR="$APPTAINER_TMPDIR"
 export APPTAINER_CACHEDIR="$APPTAINER_CACHEDIR"
 export APPTAINER_BINDPATH="$JOB_DIR:$JOB_DIR"
 
+CONTAINER_SIF="$APPTAINER_CACHEDIR/diannpipeline_${DIANN_VERSION}.sif"
+
 # Run Nextflow with absolute job-specific paths
 # All input files are now isolated in JOB_DIR and won't be affected by changes to staging areas
 nextflow run main.nf \\
-    --raw_dir "$(cd "$JOB_DIR/rawfiles" 2>/dev/null && pwd || echo "$JOB_DIR/rawfiles")" \\
-    --fasta_dir "$(cd "$JOB_DIR/fasta" 2>/dev/null && pwd || echo "$JOB_DIR/fasta")" \\
-    --config_dir "$(cd "$JOB_DIR/configs" 2>/dev/null && pwd || echo "$JOB_DIR/configs")" \\
+    --raw_dir "$JOB_DIR/rawfiles" \\
+    --fasta_dir "$JOB_DIR/fasta" \\
+    --config_dir "$JOB_DIR/configs" \\
     --outdir "$JOB_DIR/results" \\
     --diann_version "$DIANN_VERSION" \\
-    --container_sif "$CONTAINER_SIF" \\
+    --container_sif "\$CONTAINER_SIF" \\
     -work-dir "$JOB_DIR/work" \\
-    -resumeir "$JOB_DIR/work" \\
     -resume
 EOF
 
-# Submit the SBATCH script
-echo "Submitting SLURM job: $SBATCH_FILE"
-echo "Job directory: $JOB_DIR"
-sbatch "$SBATCH_FILE"
+# Submit the main SBATCH script (will wait for prep job to complete)
+echo "Submitting main Nextflow job (will wait for prep job to complete)..."
+echo "Nextflow job file: $SBATCH_FILE"
+MAIN_JOB_ID=$(sbatch --parsable "$SBATCH_FILE")
+echo "Nextflow job submitted with ID: $MAIN_JOB_ID (depends on prep job $PREP_JOB_ID)"
 
 echo ""
-echo "Job $JOB_DIR submitted successfully!"
+echo "Job directory: $JOB_DIR"
+echo "Prep job: $PREP_JOB_ID"
+echo "Main job: $MAIN_JOB_ID"
+echo "Monitor prep job logs: $JOB_DIR/logs/prep_*.out"
+echo "Monitor main job logs: $JOB_DIR/logs/nf_*.out"
