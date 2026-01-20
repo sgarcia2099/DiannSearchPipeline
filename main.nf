@@ -10,6 +10,9 @@ config_dir = Channel.value( file(params.config_dir) )
 process generate_library {
 
     label 'large'
+    
+    publishDir "${params.outdir}", mode: 'copy', pattern: "*.predicted.speclib"
+    publishDir "${params.outdir}", mode: 'copy', pattern: "report-lib.*"
 
     input:
         path fasta_dir
@@ -17,10 +20,13 @@ process generate_library {
 
     output:
         path "report-lib.predicted.speclib", emit: spectral_library
+        path "report-lib.*", optional: true
 
     script:
     """
-    mkdir -p results
+    # Copy fasta files to working directory (config expects fasta/ subdirectory)
+    mkdir -p fasta
+    cp ${fasta_dir}/*.fasta fasta/
 
     /diann-${params.diann_version}/diann-linux \
         --cfg ${config_dir}/diann_speclib_config.cfg
@@ -31,6 +37,8 @@ process generate_library {
 process diann_search {
 
     label 'large'
+    
+    publishDir "${params.outdir}", mode: 'copy'
 
     input:
         path raw_dir
@@ -43,7 +51,9 @@ process diann_search {
 
     script:
     """
-    mkdir -p results
+    # Copy fasta files to working directory (config expects fasta/ subdirectory)
+    mkdir -p fasta
+    cp ${fasta_dir}/*.fasta fasta/
 
     /diann-${params.diann_version}/diann-linux \
         --cfg ${config_dir}/diann_search_config.cfg \

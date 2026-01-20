@@ -1,23 +1,58 @@
-#For resetting nextflow directory during debugging
+#!/bin/bash
+# Archive old job directories and prepare for new pipeline run
 
-if [ -d ".nextflo*" ]; then rm -r .nextflo*; fi
-if [ -d "logs" ];      then rm -r logs; fi
+set -e
 
-cd /lustre/or-scratch/cades-bsd/$USER
+BASE_DIR="/lustre/or-scratch/cades-bsd/jkg"
+cd "$BASE_DIR"
 
-if [ -d "results" ]; then rm -r results; fi
+echo "===== Archiving previous job directories ====="
 
-if [ -d "work" ];    then rm -r work; fi
+# Find all job directories
+JOB_DIRS=$(find . -maxdepth 1 -type d -name "diann_job_*" 2>/dev/null | sort)
 
-if [ -d "stash" ];   then rm -r stash; fi
-if [ -d "cache" ];   then rm -r cache; fi
-if [ -d "tmp" ];     then rm -r tmp; fi
+if [ -z "$JOB_DIRS" ]; then
+    echo "No previous job directories found to archive."
+else
+    # Archive each job directory separately
+    for JOB_DIR in $JOB_DIRS; do
+        JOB_NAME=$(basename "$JOB_DIR")
+        ARCHIVE_NAME="${JOB_NAME}.tar.gz"
+        
+        echo "Archiving: $JOB_NAME -> $HOME/$ARCHIVE_NAME"
+        tar -czf "$HOME/$ARCHIVE_NAME" "$JOB_NAME"
+        
+        # Remove the archived job directory
+        rm -rf "$JOB_DIR"
+        echo "  Archived and removed: $JOB_DIR"
+    done
+    
+    echo ""
+    echo "All job directories archived to $HOME/"
+fi
 
-if [ -d "configs" ]; then rm -r configs; fi
+echo ""
+echo "===== Cleaning up temporary directories ====="
+# Clean up shared temporary directories (but keep cache for container reuse)
+if [ -d "tmp" ]; then 
+    rm -rf tmp
+    echo "Removed tmp/"
+fi
 
-echo "Reset!"
-echo "Now copying configs from repo..."
+echo ""
+echo "===== Preparing staging area for new job ====="
+# Ensure staging directories exist
+mkdir -p "$BASE_DIR/rawfiles"
+mkdir -p "$BASE_DIR/fasta"
+mkdir -p "$BASE_DIR/configs"
 
-cp -r $HOME/DiannSearchPipeline/configs ./configs
-
-echo "Done!"
+echo ""
+echo "===== Current staging area status ====="
+echo "Place your files here before running submit_diann.sh:"
+echo "  - Raw files: $BASE_DIR/rawfiles/"
+echo "  - FASTA files: $BASE_DIR/fasta/"
+echo "  - Config files: $BASE_DIR/configs/"
+echo ""
+echo "Note: Container cache preserved at $BASE_DIR/cache/ for reuse"
+echo ""
+echo "Cleanup complete!"
