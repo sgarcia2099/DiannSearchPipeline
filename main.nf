@@ -65,7 +65,7 @@ process diann_search {
 // Workflow
 workflow {
 
-    lib = generate_library(
+    def (lib, _unused_report) = generate_library(
         fasta_dir,
         config_dir
     )
