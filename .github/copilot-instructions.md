@@ -31,20 +31,31 @@ Notes about `params.diann_version`
 DIANN Config Summary
 - **Version**: 2.3.1 (both example configs use DIA-NN 2.3.1)
 - **Config files**: `configs/diann_speclib_config.cfg` (library generation) and `configs/diann_search_config.cfg` (search)
-- **Key fasta inputs**: `fasta/SG_all_combined_20250610.fasta` and `fasta/contams.fasta` (both configs reference these)
-- **Spectral library outputs**: speclib generation writes `result.predicted.speclib` (and `report-lib.parquet` as the lib report). The search config expects the library at `results/result.predicted.speclib` in the example pipeline.
-- **Search outputs**: example search writes `report.parquet` (main search report) and exports matrices when `--matrices` is set.
-- **Common runtime flags**: `--threads 20`, `--verbose 1`, `--qvalue 0.01`, `--matrices`, `--export-quant`, `--report-file-name`.
-- **Peptide / mass filters**: `--min-pep-len 6`, `--max-pep-len 30`, `--min-pr-mz 300`, `--max-pr-mz 1800`, `--min-fr-mz 200`, `--max-fr-mz 1800`, `--min-pr-charge 1`, `--max-pr-charge 4`.
-- **Digestion / mods**: `--cut K*,R*`, `--missed-cleavages 2`, `--unimod4` (fixed Cys carbamidomethylation), `--var-mods 3`, `--var-mod UniMod:35,15.994915,M`, `--met-excision`.
-- **Mass accuracy / windows**: `--mass-acc 20`, `--mass-acc-ms1 15`, `--individual-mass-acc`, `--individual-windows`, `--window 10`.
-- **Library generation / profiling**: `--gen-spec-lib`, `--predictor`, `--fasta-search`, `--rt-profiling` (used for empirical library generation).
-- **Inference / advanced**: `--proteoforms`, `--pg-level 2` (gene-level grouping), `--species-genes`, `--species-ids`.
+- **CRITICAL - FASTA handling**: 
+  - **NEVER hardcode FASTA paths in config files**
+  - All FASTA files (including `contams.fasta`) are passed via command-line `--fasta` args in `main.nf`
+  - Pipeline auto-discovers all `.fasta` files in staged `fasta_dir` and adds them dynamically
+  - `contams.fasta` is always included first, followed by all other FASTA files
+  - Config files should NOT contain `--fasta` lines
+- **Spectral library outputs**: speclib generation writes `report-lib.predicted.speclib` (and `report-lib.parquet` as the lib report)
+- **Search outputs**: search writes `report.parquet` (main search report) and exports matrices when `--matrices` is set
+- **Common runtime flags**: `--threads 20`, `--verbose 1`, `--qvalue 0.01`, `--matrices`, `--export-quant`, `--report-file-name`
+- **Peptide / mass filters**: `--min-pep-len 6`, `--max-pep-len 30`, `--min-pr-mz 300`, `--max-pr-mz 1800`, `--min-fr-mz 200`, `--max-fr-mz 1800`, `--min-pr-charge 1`, `--max-pr-charge 4`
+- **Digestion / mods**: `--cut K*,R*`, `--missed-cleavages 2`, `--unimod4` (fixed Cys carbamidomethylation), `--var-mods 3`, `--var-mod UniMod:35,15.994915,M`, `--met-excision`
+- **Mass accuracy / windows**: `--mass-acc 20`, `--mass-acc-ms1 15`, `--individual-mass-acc`, `--individual-windows`, `--window 10`
+- **Library generation / profiling**: `--gen-spec-lib`, `--predictor`, `--fasta-search`, `--rt-profiling` (used for empirical library generation)
+- **Inference / advanced**: `--proteoforms`, `--pg-level 2` (gene-level grouping), `--species-genes`, `--species-ids`
 
 Notes
-- Ensure the `--lib` path used in `configs/diann_search_config.cfg` matches the spectral library emitted by the library generation step (pipeline currently expects a `results/`-scoped library path).
-- The example configs use 20 threads; align `submit_diann.sh` SBATCH `-c` and Nextflow `withLabel` settings if you adjust thread counts.
-- If you change `params.diann_version`, verify the container image exposes `/diann-<version>/diann-linux` or update `main.nf` to point to the actual binary path inside your image.
+- The pipeline auto-discovers FASTA files at runtime—**never hardcode FASTA paths in config files**
+- The example configs use 20 threads; align `submit_diann.sh` SBATCH `-c` and Nextflow `withLabel` settings if you adjust thread counts
+- If you change `params.diann_version`, verify the container image exposes `/diann-<version>/diann-linux` or update `main.nf` to point to the actual binary path inside your image
+
+Critical Pipeline Rules (DO NOT BREAK)
+1. **FASTA files**: All FASTA files MUST be passed via command-line `--fasta` args in process scripts, NOT hardcoded in config files
+2. **No file copying in main.nf**: `submit_diann.sh` handles all file staging; processes use Nextflow-staged paths directly
+3. **Variable FASTA discovery**: Pipeline automatically finds all `*.fasta` files except `contams.fasta` in the staged `fasta_dir`
+4. **Symlink resolution**: Nextflow stages inputs as symlinks; container must be able to follow them OR files must be copied by `submit_diann.sh`
 
 Helpful repo artifacts
 - `submit_diann.sh`: convenience script that invokes `nextflow run main.nf` — useful as an example invocation or for cluster submission wrappers.
