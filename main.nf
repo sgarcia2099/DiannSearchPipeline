@@ -24,7 +24,7 @@ process generate_library {
 
     script:
     """
-    variable_fastas=`ls fasta/*.fasta 2>/dev/null | grep -v 'contams\\.fasta$' || true`
+    variable_fastas=`ls fasta/*.fasta 2>/dev/null | grep -v "contams\\.fasta$" || true`
     if [ -z "\$variable_fastas" ]; then
         echo "No variable FASTA found in fasta/ (expected *.fasta besides contams.fasta)" >&2
         exit 1
@@ -58,7 +58,7 @@ process diann_search {
 
     script:
     """
-    variable_fastas=`ls fasta/*.fasta 2>/dev/null | grep -v 'contams\\.fasta$' || true`
+    variable_fastas=`ls fasta/*.fasta 2>/dev/null | grep -v "contams\\.fasta$" || true`
     if [ -z "\$variable_fastas" ]; then
         echo "No variable FASTA found in fasta/ (expected *.fasta besides contams.fasta)" >&2
         exit 1
