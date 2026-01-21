@@ -25,18 +25,18 @@ process generate_library {
     script:
     """
     variable_fastas=`ls fasta/*.fasta 2>/dev/null | grep -v 'contams\.fasta$' || true`
-    if [ -z "$variable_fastas" ]; then
+    if [ -z "\$variable_fastas" ]; then
         echo "No variable FASTA found in fasta/ (expected *.fasta besides contams.fasta)" >&2
         exit 1
     fi
 
     fasta_args=""
-    for f in $variable_fastas; do
-        fasta_args+=" --fasta $f"
+    for f in \$variable_fastas; do
+        fasta_args+=" --fasta \$f"
     done
 
     /diann-${params.diann_version}/diann-linux \
-        --cfg ${config_dir}/diann_speclib_config.cfg $fasta_args
+        --cfg ${config_dir}/diann_speclib_config.cfg \$fasta_args
     """
 }
 
@@ -59,21 +59,21 @@ process diann_search {
     script:
     """
     variable_fastas=`ls fasta/*.fasta 2>/dev/null | grep -v 'contams\.fasta$' || true`
-    if [ -z "$variable_fastas" ]; then
+    if [ -z "\$variable_fastas" ]; then
         echo "No variable FASTA found in fasta/ (expected *.fasta besides contams.fasta)" >&2
         exit 1
     fi
 
     fasta_args=""
-    for f in $variable_fastas; do
-        fasta_args+=" --fasta $f"
+    for f in \$variable_fastas; do
+        fasta_args+=" --fasta \$f"
     done
 
     /diann-${params.diann_version}/diann-linux \
         --cfg ${config_dir}/diann_search_config.cfg \
         --dir ${raw_dir} \
         --lib ${spectral_library} \
-        $fasta_args
+        \$fasta_args
     """
 }
 
