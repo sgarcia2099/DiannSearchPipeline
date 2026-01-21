@@ -25,9 +25,15 @@ process generate_library {
     script:
     """
     fasta_args=""
+    
+    # Always add contaminant FASTA
+    if [ -f "${fasta_dir}/contams.fasta" ]; then
+        fasta_args=" --fasta ${fasta_dir}/contams.fasta"
+    fi
+    
     found_fasta=false
     
-    # Add variable FASTA files (contams.fasta is hardcoded in config)
+    # Add variable FASTA files
     for f in ${fasta_dir}/*.fasta; do
         if [ -f "\$f" ] && [ "\$(basename \$f)" != "contams.fasta" ]; then
             fasta_args+=" --fasta \$f"
@@ -64,9 +70,15 @@ process diann_search {
     script:
     """
     fasta_args=""
+    
+    # Always add contaminant FASTA
+    if [ -f "${fasta_dir}/contams.fasta" ]; then
+        fasta_args=" --fasta ${fasta_dir}/contams.fasta"
+    fi
+    
     found_fasta=false
     
-    # Add variable FASTA files (contams.fasta is hardcoded in config)
+    # Add variable FASTA files
     for f in ${fasta_dir}/*.fasta; do
         if [ -f "\$f" ] && [ "\$(basename \$f)" != "contams.fasta" ]; then
             fasta_args+=" --fasta \$f"
