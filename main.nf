@@ -24,6 +24,12 @@ process generate_library {
 
     script:
     """
+    # Debug: show what's staged
+    echo "=== Work directory contents ==="
+    ls -la
+    echo "=== Fasta_dir value: ${fasta_dir} ==="
+    echo "================================"
+    
     fasta_args=""
     
     # Always add contaminant FASTA
