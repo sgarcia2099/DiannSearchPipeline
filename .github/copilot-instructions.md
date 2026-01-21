@@ -50,7 +50,12 @@ Helpful repo artifacts
 - `submit_diann.sh`: convenience script that invokes `nextflow run main.nf` — useful as an example invocation or for cluster submission wrappers.
 
 Exact cluster submission flow (from `submit_diann.sh`)
-- Purpose: `submit_diann.sh <DIANN_VERSION>` builds an SBATCH wrapper that sets environment vars, binds the workspace paths, and submits a SLURM job which runs Nextflow.
+- Purpose: `submit_diann.sh <DIANN_VERSION>` handles **all file staging** into a job-specific directory, then submits Nextflow to run on pre-staged files.
+- **File staging happens first** (via `prepare_job.sbatch`):
+  - Copies `rawfiles/`, `fasta/`, `configs/` from `$BASE/` into the job directory
+  - Copies `main.nf` and `nextflow.config` into the job directory
+  - Validates all files copied successfully before proceeding
+  - This ensures the pipeline **never needs to copy files itself** (symlinks already resolved)
 - Key exported env vars set before running:
   - `APPTAINER_TMPDIR` -> e.g. `/lustre/or-scratch/cades-bsd/$USER/tmp`
   - `APPTAINER_CACHEDIR` -> e.g. `/lustre/or-scratch/cades-bsd/$USER/cache`
@@ -65,10 +70,16 @@ nextflow run main.nf \
     -resume
 ```
 
+**CRITICAL: `main.nf` should NOT copy files**
+- `submit_diann.sh` pre-stages all files into the job directory
+- Processes reference `${fasta_dir}`, `${config_dir}`, `${raw_dir}` directly
+- Do NOT add copying logic to `main.nf` (defeats the purpose of pre-staging)
+
 Notes for agents
 - The script validates there are `.raw` files in `$BASE/rawfiles` and creates necessary `logs/` and `results/` directories — match those conventions when writing tests or docs.
 - SBATCH resource hints: `-c 32`, `--mem=125g`, `--nodes=1`, `-t 1-00:00:00` — processes still use `withLabel` resource settings, but the submission wrapper requests a large SLURM allocation.
 - When suggesting changes to execution flags, prefer modifying `submit_diann.sh` or adding a new `profile` in `nextflow.config` to keep user workflow consistent.
+- Agents modifying `main.nf` processes: **never add `cp` or file copying commands**; all input paths are already usable as-is.
 
 Project-specific conventions
 - Resource labels: use `withLabel: small` and `withLabel: large` in `nextflow.config`. Processes should pick one of these labels to inherit resource settings.

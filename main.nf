@@ -15,8 +15,8 @@ process generate_library {
     publishDir "${params.outdir}", mode: 'copy', pattern: "report-lib.*"
 
     input:
-        path fasta
-        path configs
+        path fasta_dir
+        path config_dir
 
     output:
         path "report-lib.predicted.speclib", emit: spectral_library
@@ -27,7 +27,8 @@ process generate_library {
     fasta_args=""
     found_fasta=false
     
-    for f in fasta/*.fasta; do
+    # Add variable FASTA files (contams.fasta is hardcoded in config)
+    for f in ${fasta_dir}/*.fasta; do
         if [ -f "\$f" ] && [ "\$(basename \$f)" != "contams.fasta" ]; then
             fasta_args+=" --fasta \$f"
             found_fasta=true
@@ -35,12 +36,12 @@ process generate_library {
     done
     
     if [ "\$found_fasta" = "false" ]; then
-        echo "No variable FASTA found in fasta/ (expected *.fasta besides contams.fasta)" >&2
+        echo "No variable FASTA found in ${fasta_dir}/ (expected *.fasta besides contams.fasta)" >&2
         exit 1
     fi
 
     /diann-${params.diann_version}/diann-linux \
-        --cfg configs/diann_speclib_config.cfg \$fasta_args
+        --cfg ${config_dir}/diann_speclib_config.cfg \$fasta_args
     """
 }
 
@@ -53,8 +54,8 @@ process diann_search {
 
     input:
         path raw_dir
-        path fasta
-        path configs
+        path fasta_dir
+        path config_dir
         path spectral_library
 
     output:
@@ -65,7 +66,8 @@ process diann_search {
     fasta_args=""
     found_fasta=false
     
-    for f in fasta/*.fasta; do
+    # Add variable FASTA files (contams.fasta is hardcoded in config)
+    for f in ${fasta_dir}/*.fasta; do
         if [ -f "\$f" ] && [ "\$(basename \$f)" != "contams.fasta" ]; then
             fasta_args+=" --fasta \$f"
             found_fasta=true
@@ -73,12 +75,12 @@ process diann_search {
     done
     
     if [ "\$found_fasta" = "false" ]; then
-        echo "No variable FASTA found in fasta/ (expected *.fasta besides contams.fasta)" >&2
+        echo "No variable FASTA found in ${fasta_dir}/ (expected *.fasta besides contams.fasta)" >&2
         exit 1
     fi
 
     /diann-${params.diann_version}/diann-linux \
-        --cfg configs/diann_search_config.cfg \
+        --cfg ${config_dir}/diann_search_config.cfg \
         --dir ${raw_dir} \
         --lib ${spectral_library} \
         \$fasta_args
