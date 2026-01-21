@@ -11,6 +11,9 @@ echo "===== Archiving previous job directories ====="
 # Find all job directories
 JOB_DIRS=$(find . -maxdepth 1 -type d -name "diann_job_*" 2>/dev/null | sort)
 
+# Get active SLURM job names to avoid archiving running jobs
+ACTIVE_JOBS=$(squeue -h -u "$USER" -o "%j" 2>/dev/null || true)
+
 if [ -z "$JOB_DIRS" ]; then
     echo "No previous job directories found to archive."
 else
@@ -18,6 +21,17 @@ else
     for JOB_DIR in $JOB_DIRS; do
         JOB_NAME=$(basename "$JOB_DIR")
         ARCHIVE_NAME="${JOB_NAME}.tar.gz"
+
+        # Derive timestamp and related SLURM job names
+        JOB_TS="${JOB_NAME#diann_job_}"
+        PREP_JOB_NAME="diann_prep_${JOB_TS}"
+        MAIN_JOB_NAME="diann_${JOB_TS}"
+
+        # Skip if job is still active in SLURM
+        if echo "$ACTIVE_JOBS" | grep -Fxq "$PREP_JOB_NAME" || echo "$ACTIVE_JOBS" | grep -Fxq "$MAIN_JOB_NAME"; then
+            echo "Skipping active job directory: $JOB_NAME (prep/main job still running)"
+            continue
+        fi
 
         echo "Removing large files before archiving to save space..."
         find "$JOB_DIR" -type f -name "*.raw" -print -delete
