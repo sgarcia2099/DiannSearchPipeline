@@ -99,6 +99,47 @@ process diann_search {
     """
 }
 
+// Package results for export
+process package_results {
+
+    label 'small'
+    
+    publishDir "${params.outdir}", mode: 'copy', pattern: "*.tar.gz"
+
+    input:
+        path results_dir
+        path raw_dir
+        path fasta_dir
+
+    output:
+        path "diann_results_*.tar.gz"
+
+    script:
+    """
+    # Create timestamped archive name
+    TIMESTAMP=\$(date +%Y%m%d_%H%M%S)
+    ARCHIVE_NAME="diann_results_\${TIMESTAMP}.tar.gz"
+    
+    # Create temporary directory for results to archive
+    mkdir -p results_package
+    
+    # Copy all results (publishDir outputs)
+    if [ -d "${results_dir}" ]; then
+        cp -r ${results_dir}/* results_package/ 2>/dev/null || true
+    fi
+    
+    # Remove large files we don't want to export
+    find results_package -type f -name "*.raw" -delete 2>/dev/null || true
+    find results_package -type f -name "*.fasta" -delete 2>/dev/null || true
+    
+    # Create compressed archive
+    tar -czf "\${ARCHIVE_NAME}" results_package/
+    
+    echo "Created export package: \${ARCHIVE_NAME}"
+    echo "Excluded .raw and .fasta files for minimal size"
+    """
+}
+
 // Workflow
 workflow {
 
@@ -107,10 +148,16 @@ workflow {
         config_dir
     )
 
-    diann_search(
+    def search_results = diann_search(
         raw_dir,
         fasta_dir,
         config_dir,
         lib
+    )
+
+    package_results(
+        file(params.outdir),
+        raw_dir,
+        fasta_dir
     )
 }

@@ -1,26 +1,25 @@
 #!/bin/bash
-# Archive old job directories and prepare for new pipeline run
+# Move pipeline-generated archives to home and clean up job directories
 
 set -e
 
 BASE_DIR="/lustre/or-scratch/cades-bsd/jkg"
 cd "$BASE_DIR"
 
-echo "===== Archiving previous job directories ====="
+echo "===== Processing completed job directories ====="
 
 # Find all job directories
 JOB_DIRS=$(find . -maxdepth 1 -type d -name "diann_job_*" 2>/dev/null | sort)
 
-# Get active SLURM job names to avoid archiving running jobs
+# Get active SLURM job names to avoid processing running jobs
 ACTIVE_JOBS=$(squeue -h -u "$USER" -o "%j" 2>/dev/null || true)
 
 if [ -z "$JOB_DIRS" ]; then
-    echo "No previous job directories found to archive."
+    echo "No job directories found."
 else
-    # Archive each job directory separately
+    # Process each job directory separately
     for JOB_DIR in $JOB_DIRS; do
         JOB_NAME=$(basename "$JOB_DIR")
-        ARCHIVE_NAME="${JOB_NAME}.tar.gz"
 
         # Derive timestamp and related SLURM job names
         JOB_TS="${JOB_NAME#diann_job_}"
@@ -29,24 +28,31 @@ else
 
         # Skip if job is still active in SLURM
         if echo "$ACTIVE_JOBS" | grep -Fxq "$PREP_JOB_NAME" || echo "$ACTIVE_JOBS" | grep -Fxq "$MAIN_JOB_NAME"; then
-            echo "Skipping active job directory: $JOB_NAME (prep/main job still running)"
+            echo "Skipping active job directory: $JOB_NAME (job still running)"
             continue
         fi
 
-        echo "Removing large files before archiving to save space..."
-        find "$JOB_DIR" -type f -name "*.raw" -print -delete
-        find "$JOB_DIR" -type f -name "*.fasta" -print -delete
-        
-        echo "Archiving: $JOB_NAME -> $HOME/$ARCHIVE_NAME"
-        tar -czf "$HOME/$ARCHIVE_NAME" "$JOB_NAME"
-        
-        # Remove the archived job directory
-        rm -rf "$JOB_DIR"
-        echo "  Archived and removed: $JOB_DIR"
+        # Look for pipeline-generated archive in results directory
+        RESULTS_DIR="$JOB_DIR/results"
+        ARCHIVE_FILE=$(find "$RESULTS_DIR" -maxdepth 1 -type f -name "diann_results_*.tar.gz" 2>/dev/null | head -n 1)
+
+        if [ -n "$ARCHIVE_FILE" ]; then
+            ARCHIVE_NAME=$(basename "$ARCHIVE_FILE")
+            echo "Moving archive: $ARCHIVE_NAME -> $HOME/"
+            mv "$ARCHIVE_FILE" "$HOME/"
+            echo "  Moved: $ARCHIVE_FILE"
+            
+            # Remove the job directory after moving archive
+            echo "Removing job directory: $JOB_DIR"
+            rm -rf "$JOB_DIR"
+            echo "  Cleaned up: $JOB_DIR"
+        else
+            echo "No archive found for $JOB_NAME (may still be processing or failed)"
+        fi
     done
     
     echo ""
-    echo "All job directories archived to $HOME/"
+    echo "All completed job archives moved to $HOME/"
 fi
 
 echo ""
