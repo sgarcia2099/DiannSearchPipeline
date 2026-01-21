@@ -5,7 +5,7 @@ Purpose
 
 Big picture (what to know first)
 - Core runner: Nextflow pipeline (entry typically `main.nf`) using `nextflow.config` for cluster/container settings.
-- Execution environment: SLURM executor with Apptainer containers (see [nextflow.config](nextflow.config)).
+- Execution environment: SLURM executor with Apptainer containers (see [nextflow.config](../nextflow.config)).
 - Data flow: raw files → Nextflow channels → process tasks (labeled `small` or `large`) → outputs under `params.outdir` and the Nextflow `work` directory.
 
 Key files to inspect
