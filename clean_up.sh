@@ -18,6 +18,9 @@ else
     for JOB_DIR in $JOB_DIRS; do
         JOB_NAME=$(basename "$JOB_DIR")
         ARCHIVE_NAME="${JOB_NAME}.tar.gz"
+
+        echo "Removing raw files before archiving to save space..."
+        find "$JOB_DIR" -type f -name "*.raw" -print -delete
         
         echo "Archiving: $JOB_NAME -> $HOME/$ARCHIVE_NAME"
         tar -czf "$HOME/$ARCHIVE_NAME" "$JOB_NAME"
