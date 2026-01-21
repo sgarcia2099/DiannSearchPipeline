@@ -24,10 +24,6 @@ process generate_library {
 
     script:
     """
-    # Copy fasta files to working directory (config expects fasta/ subdirectory)
-    mkdir -p fasta
-    cp ${fasta_dir}/*.fasta fasta/
-
     /diann-${params.diann_version}/diann-linux \
         --cfg ${config_dir}/diann_speclib_config.cfg
     """
@@ -51,10 +47,6 @@ process diann_search {
 
     script:
     """
-    # Copy fasta files to working directory (config expects fasta/ subdirectory)
-    mkdir -p fasta
-    cp ${fasta_dir}/*.fasta fasta/
-
     /diann-${params.diann_version}/diann-linux \
         --cfg ${config_dir}/diann_search_config.cfg \
         --dir ${raw_dir} \
