@@ -108,6 +108,7 @@ process package_results {
 
     input:
         path results_dir
+        path search_output
         path raw_dir
         path fasta_dir
 
@@ -157,6 +158,7 @@ workflow {
 
     package_results(
         file(params.outdir),
+        search_results,
         raw_dir,
         fasta_dir
     )
