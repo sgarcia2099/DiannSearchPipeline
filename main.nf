@@ -15,8 +15,8 @@ process generate_library {
     publishDir "${params.outdir}", mode: 'copy', pattern: "report-lib.*"
 
     input:
-        path fasta_dir
-        path config_dir
+        path fasta
+        path configs
 
     output:
         path "report-lib.predicted.speclib", emit: spectral_library
@@ -40,7 +40,7 @@ process generate_library {
     fi
 
     /diann-${params.diann_version}/diann-linux \
-        --cfg ${config_dir}/diann_speclib_config.cfg \$fasta_args
+        --cfg configs/diann_speclib_config.cfg \$fasta_args
     """
 }
 
@@ -53,8 +53,8 @@ process diann_search {
 
     input:
         path raw_dir
-        path fasta_dir
-        path config_dir
+        path fasta
+        path configs
         path spectral_library
 
     output:
@@ -78,7 +78,7 @@ process diann_search {
     fi
 
     /diann-${params.diann_version}/diann-linux \
-        --cfg ${config_dir}/diann_search_config.cfg \
+        --cfg configs/diann_search_config.cfg \
         --dir ${raw_dir} \
         --lib ${spectral_library} \
         \$fasta_args
