@@ -132,6 +132,7 @@ process package_results {
     # Remove large files we don't want to export
     find results_package -type f -name "*.raw" -delete 2>/dev/null || true
     find results_package -type f -name "*.fasta" -delete 2>/dev/null || true
+    find results_package -type f -name "report-lib.predicted.speclib" -delete 2>/dev/null || true
     
     # Create compressed archive
     tar -czf "\${ARCHIVE_NAME}" results_package/
