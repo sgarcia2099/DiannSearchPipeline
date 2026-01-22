@@ -125,6 +125,11 @@ cd ~/github/DiannSearchPipeline
 ./clean_up.sh
 ```
 
+### 7. Export archive files
+```bash
+rsync -avh 'jkg@or-login.ornl.gov:*.tar.gz' .
+```
+
 This will:
 - Archive each job directory separately to `$HOME/diann_job_YYYYMMDD_HHMMSS.tar.gz`
 - Remove the archived job directories
